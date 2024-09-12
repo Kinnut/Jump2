@@ -131,9 +131,13 @@ MonoBehaviour:
   stoppingDistance: 4
   fireRate: 2
   bulletSpeed: 10
-  poolTag: Red
   bulletPrefab: {fileID: 1881052383983213776, guid: 23261ca469013a042a4d65b844637466, type: 3}
   firePoint: {fileID: 1876542553586102702}
+  itemPrefabs:
+  - {fileID: 7883801555066836677, guid: bc0b4ffdd4ec67a46b0c19d55cab0c77, type: 3}
+  - {fileID: 3957860818038650986, guid: 930cf8db138ddff47bd4f7a3cec27362, type: 3}
+  - {fileID: 5207017327178400053, guid: 05f63d57730c1d442b0fb12dc5a36b8d, type: 3}
+  - {fileID: 8531981420261227904, guid: f3a49081c3017344b8a1817d9cf98746, type: 3}
 --- !u!61 &3221296700969427956
 BoxCollider2D:
   m_ObjectHideFlags: 0

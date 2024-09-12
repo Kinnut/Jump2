@@ -6,6 +6,7 @@ public class ChangeCursor : MonoBehaviour
 
     void Start()
     {
-        Cursor.SetCursor(cursorTexture, Vector2.zero, CursorMode.ForceSoftware);
+        Vector2 hotspot = new Vector2(cursorTexture.width / 2, cursorTexture.height / 2);
+        Cursor.SetCursor(cursorTexture, hotspot, CursorMode.ForceSoftware);
     }
 }
