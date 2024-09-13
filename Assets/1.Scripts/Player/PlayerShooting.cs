@@ -19,12 +19,20 @@ public class PlayerShooting : MonoBehaviour
 
     public Image chargeGaugeImage;
 
+    public AudioClip shootSFX; // 총을 쏠 때 재생할 사운드 클립 (슈팅 사운드)
+    private SoundManager soundManager; // SoundManager 참조
+
     private float chargeTime;
     private bool isCharging = false;
     private float nextFireTime = 0f;
 
     private int currentBulletIndex = 0;  // 현재 사용 중인 총알 프리팹 인덱스
     public GameObject[] bulletPrefabs;   // 변경 가능한 총알 프리팹 배열
+
+    void Start()
+    {
+        soundManager = FindObjectOfType<SoundManager>();  // SoundManager 스크립트 찾기
+    }
 
     void Update()
     {
@@ -86,6 +94,9 @@ public class PlayerShooting : MonoBehaviour
             bulletScript.SetDamage(minDamage);  // 기본 공격의 최소 데미지 설정
             bulletScript.SetDirection(firePoint.up);
         }
+
+        // 슈팅 사운드 재생
+        PlayShootingSound();
     }
 
     // 차지된 총알 발사
@@ -116,8 +127,12 @@ public class PlayerShooting : MonoBehaviour
             bulletScript.SetDamage(damage);  // 차지된 데미지만 증가
             bulletScript.SetDirection(firePoint.up);
         }
+
+        // 슈팅 사운드 재생
+        PlayShootingSound();
     }
 
+    // 기본 총알 프리팹 변경 (아이템 먹을 때)
     public void ChangeBasicBulletPrefab()
     {
         if (currentBulletIndex < bulletPrefabs.Length - 1)
@@ -133,10 +148,20 @@ public class PlayerShooting : MonoBehaviour
         }
     }
 
+    // 총알 강화 (아이템 먹을 때)
     public void StrengthenBullets()
     {
         minDamage += 10f;  // 최소 데미지 10 증가
         maxDamage += 10f;  // 최대 데미지 10 증가
         Debug.Log("총알이 강화되었습니다. 최소 데미지: " + minDamage + ", 최대 데미지: " + maxDamage);
+    }
+
+    // 슈팅 사운드를 재생하는 함수
+    void PlayShootingSound()
+    {
+        if (shootSFX != null && soundManager != null)
+        {
+            soundManager.PlaySFX(shootSFX);  // SoundManager의 SFX 재생 함수 호출
+        }
     }
 }
