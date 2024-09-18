@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;  // 이벤트 사용을 위해 System 네임스페이스 추가
 
 public class Enemy : MonoBehaviour
 {
@@ -15,6 +16,9 @@ public class Enemy : MonoBehaviour
     private ScoreManager scoreManager;       // 점수 관리 스크립트
     private Transform player;                // 플레이어의 위치
     private float nextFireTime = 0f;         // 다음 발사 가능 시간
+
+    // 적이 사망할 때 발생할 이벤트
+    public event Action OnEnemyDestroyed;    // 적이 파괴되었을 때 발생하는 이벤트
 
     void Start()
     {
@@ -94,18 +98,31 @@ public class Enemy : MonoBehaviour
     {
         scoreManager.AddKillScore();  // 적이 죽을 때 점수 추가
         DropItem();                   // 아이템 드롭 시도
+
+        // 적 사망 이벤트 호출
+        if (OnEnemyDestroyed != null)
+        {
+            Debug.Log("적이 사망했으며, OnEnemyDestroyed 이벤트 호출");
+            OnEnemyDestroyed.Invoke();  // 이벤트 호출
+        }
+        else
+        {
+            Debug.LogWarning("OnEnemyDestroyed 이벤트가 연결되지 않았습니다.");
+        }
+
         gameObject.SetActive(false);  // 적 비활성화 (오브젝트 풀링 사용 시)
     }
 
-    // 10% 확률로 아이템 드롭
+
+    // 20% 확률로 아이템 드롭
     void DropItem()
     {
         Debug.Log("아이템 드롭 시도");
-        float dropChance = Random.Range(0f, 1f);  // 0에서 1 사이의 랜덤 값 생성
+        float dropChance = UnityEngine.Random.Range(0f, 1f);  // 0에서 1 사이의 랜덤 값 생성
 
-        if (dropChance <= 0.2f)  // 10% 확률로 아이템 드롭
+        if (dropChance <= 0.2f)  // 20% 확률로 아이템 드롭
         {
-            int randomIndex = Random.Range(0, itemPrefabs.Length);  // 아이템 프리팹 중 하나를 랜덤 선택
+            int randomIndex = UnityEngine.Random.Range(0, itemPrefabs.Length);  // 아이템 프리팹 중 하나를 랜덤 선택
             Instantiate(itemPrefabs[randomIndex], transform.position, Quaternion.identity);
             Debug.Log("아이템 드롭됨: " + itemPrefabs[randomIndex].name);
         }

@@ -1,6 +1,7 @@
 using Cinemachine;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -14,15 +15,22 @@ public class Player : MonoBehaviour
     private bool isBoosted = false;                // 속도 부스트 여부
 
     private PlayerShooting playerShooting;         // PlayerShooting 스크립트 참조
+    public ScoreManager scoreManager;              // ScoreManager 참조 (점수 관리)
+
+    private float playTime = 0f;                   // 플레이 타임 기록
 
     void Start()
     {
-
         maxHealth = health;                        // 최대 체력 설정
         defaultSpeed = speed;                      // 기본 속도 저장
         UpdateHealthBar();                         // 체력바 업데이트
         impulseSource = GetComponent<CinemachineImpulseSource>();  // Impulse Source 설정
         playerShooting = GetComponent<PlayerShooting>();           // PlayerShooting 스크립트 참조
+    }
+
+    void Update()
+    {
+        playTime += Time.deltaTime;                // 플레이 타임 측정
     }
 
     public void TakeDamage(float damage)
@@ -53,10 +61,10 @@ public class Player : MonoBehaviour
 
         health = Mathf.Clamp(health, 0, maxHealth);
 
+        UpdateHealthBar();
         Debug.Log("플레이어 체력 회복: " + health);
     }
 
-    // Ammo 아이템을 먹었을 때, 기본 공격의 총알 프리팹을 변경
     public void StrengthenBasicAttack()
     {
         playerShooting.ChangeBasicBulletPrefab();  // 기본 총알 프리팹 변경
@@ -92,5 +100,12 @@ public class Player : MonoBehaviour
     void Die()
     {
         Debug.Log("플레이어 사망");
+
+        // 사망 시 점수 및 플레이 타임을 저장하고 엔딩 씬으로 이동
+        PlayerPrefs.SetFloat("FinalScore", scoreManager.GetCurrentScore());
+        PlayerPrefs.SetFloat("PlayTime", playTime);
+
+        // 엔딩 씬으로 이동
+        SceneManager.LoadScene("2.EndingScene");
     }
 }

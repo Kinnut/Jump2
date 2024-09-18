@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    public ObjectPooler objectPooler; 
+    public DynamicObjectPooler objectPooler; 
     public Transform player;          
     public float spawnRadius = 15f;  
     public float spawnInterval = 5f;    

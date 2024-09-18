@@ -1,0 +1,30 @@
+{
+    "project_info": {
+        "project_number": "1009659715618",
+        "project_id": "cube-758d9",
+        "storage_bucket": "cube-758d9.appspot.com",
+        "firebase_url": "https://cube-758d9-default-rtdb.firebaseio.com/"
+    },
+    "client": [
+        {
+            "client_info": {
+                "mobilesdk_app_id": "1:1009659715618:android:a2c4c26b04a887535a6a7b",
+                "android_client_info": {
+                    "package_name": "com.kinnut.cube"
+                }
+            },
+            "oauth_client": [],
+            "api_key": [
+                {
+                    "current_key": "AIzaSyDU5X-u-xDW0BHD6d1GemAQ4MThs0qLAcc"
+                }
+            ],
+            "services": {
+                "appinvite_service": {
+                    "other_platform_oauth_client": []
+                }
+            }
+        }
+    ],
+    "configuration_version": "1"
+}
