@@ -19,13 +19,17 @@ public class WaveSpawner : MonoBehaviour
 
     void Start()
     {
+        if (objectPooler == null || spawnPoints == null || spawnPoints.Length == 0)
+        {
+            Debug.LogError("Object Pooler가 연결되지 않았거나 스폰 포인트가 설정되지 않았습니다.");
+            return;
+        }
+
         StartCoroutine(StartNextWave());
-        Debug.Log("게임시작");
     }
 
     void Update()
     {
-        // 남은 적이 없고 웨이브가 진행 중이 아닌 상태에서 다음 웨이브 시작
         if (enemiesRemaining <= 0 && !waveInProgress)
         {
             StartCoroutine(StartNextWave());
@@ -35,82 +39,85 @@ public class WaveSpawner : MonoBehaviour
     // 웨이브 시작
     IEnumerator StartNextWave()
     {
-        Debug.Log("웨이브시작");
         waveInProgress = true;
 
-        int enemiesToSpawn = startEnemiesPerWave + (currentWave / 2) * 2;  // 2웨이브마다 2마리 추가
-        int strongEnemyCount = Mathf.CeilToInt(enemiesToSpawn * 0.1f);     // 20%는 강화된 몬스터
+        int enemiesToSpawn = startEnemiesPerWave + (currentWave / 2) * 2;
+        int strongEnemyCount = Mathf.CeilToInt(enemiesToSpawn * 0.1f);
         int normalEnemyCount = enemiesToSpawn - strongEnemyCount;
 
         enemiesRemaining = enemiesToSpawn;
-        List<int> availableSpawnPoints = new List<int> { 0, 1, 2, 3 };  // 스폰 지점 리스트
+
+        List<int> availableSpawnPoints = new List<int> { 0, 1, 2, 3 };
 
         while (normalEnemyCount > 0 || strongEnemyCount > 0)
         {
-            Debug.Log("while문 시작");
-            // 두 개의 랜덤 스폰 포인트 선택 (동시에 두 마리 소환 X)
             List<int> spawnIndices = GetRandomSpawnIndices(availableSpawnPoints);
-            Debug.Log("오류1");
-            // 첫 번째 스폰 포인트에 몬스터 소환
+
+            // 첫 번째 스폰 포인트에서 적 소환
             if (normalEnemyCount > 0)
             {
-                SpawnEnemy(normalEnemyTag, spawnIndices[0]);  // 풀에서 기본 몬스터 소환
+                SpawnEnemy(normalEnemyTag, spawnIndices[0]);
                 normalEnemyCount--;
             }
             else if (strongEnemyCount > 0)
             {
-                SpawnEnemy(strongEnemyTag, spawnIndices[0]);  // 풀에서 강화 몬스터 소환
+                SpawnEnemy(strongEnemyTag, spawnIndices[0]);
                 strongEnemyCount--;
             }
 
-            // 두 번째 스폰 포인트에 몬스터 소환
+            // 두 번째 스폰 포인트에서 적 소환
             if (normalEnemyCount > 0)
             {
-                SpawnEnemy(normalEnemyTag, spawnIndices[1]);  // 풀에서 기본 몬스터 소환
+                SpawnEnemy(normalEnemyTag, spawnIndices[1]);
                 normalEnemyCount--;
             }
             else if (strongEnemyCount > 0)
             {
-                SpawnEnemy(strongEnemyTag, spawnIndices[1]);  // 풀에서 강화 몬스터 소환
+                SpawnEnemy(strongEnemyTag, spawnIndices[1]);
                 strongEnemyCount--;
             }
 
-            yield return new WaitForSeconds(spawnInterval);  // 소환 간격 대기
+            yield return new WaitForSeconds(spawnInterval);
         }
 
-        // 몬스터가 모두 소환된 후, 전부 처치될 때까지 대기
+
         while (enemiesRemaining > 0)
         {
-            yield return null;  // 계속 대기
+            yield return null;
         }
 
-        // 다음 웨이브 시작 전 대기 시간
         yield return new WaitForSeconds(waveWaitTime);
 
-        currentWave++;  // 웨이브 증가
-        waveInProgress = false;  // 다음 웨이브 진행 가능 상태
+        currentWave++;
+        waveInProgress = false;
     }
 
     // 적 소환 메서드 (DynamicObjectPooler를 사용하여 적 소환)
     void SpawnEnemy(string enemyTag, int spawnIndex)
     {
-        Debug.Log("오류2");
-        Transform spawnPoint = spawnPoints[spawnIndex];
+        if (objectPooler == null || spawnPoints == null || spawnIndex < 0 || spawnIndex >= spawnPoints.Length)
+        {
+            Debug.LogError("Object Pooler가 연결되지 않았거나 잘못된 스폰 인덱스입니다.");
+            return;
+        }
 
-        // ObjectPooler에서 적 소환
+        Transform spawnPoint = spawnPoints[spawnIndex];
         GameObject enemyObject = objectPooler.SpawnFromPool(enemyTag, spawnPoint.position, Quaternion.identity);
 
-        EnemyBase enemy = enemyObject.GetComponent<EnemyBase>(); // Enemy 스크립트를 가져옴
-        if (enemy != null)
+        if (enemyObject == null)
         {
-            // 적이 소환될 때 OnEnemyDestroyed 이벤트를 연결
-            enemy.OnEnemyDestroyed += OnEnemyDestroyed;
-            Debug.Log("적 이벤트 연결 완료");
+            Debug.LogError("적 생성 실패: " + enemyTag + " 풀에서 적을 가져오지 못했습니다.");
+            return;
         }
-        else
+
+        EnemyBase enemyBase = enemyObject.GetComponent<EnemyBase>();
+        if (enemyBase == null)
         {
-            Debug.LogWarning("적에 Enemy 스크립트가 붙어 있지 않습니다.");
+            Debug.LogError("EnemyBase 스크립트가 프리팹에 붙어 있지 않습니다. 태그: " + enemyTag);
+            return;
         }
+
+        enemyBase.OnEnemyDestroyed += OnEnemyDestroyed;
     }
 
     // 랜덤으로 두 개의 스폰 포인트 선택
@@ -118,12 +125,12 @@ public class WaveSpawner : MonoBehaviour
     {
         int firstSpawnIndex = Random.Range(0, availableSpawnPoints.Count);
         int first = availableSpawnPoints[firstSpawnIndex];
-        availableSpawnPoints.RemoveAt(firstSpawnIndex);  // 첫 번째 선택한 포인트는 제거
+        availableSpawnPoints.RemoveAt(firstSpawnIndex);
 
         int secondSpawnIndex = Random.Range(0, availableSpawnPoints.Count);
         int second = availableSpawnPoints[secondSpawnIndex];
 
-        availableSpawnPoints.Add(first);  // 다시 리스트에 추가
+        availableSpawnPoints.Add(first); // 다시 리스트에 추가
 
         return new List<int> { first, second };
     }
@@ -132,6 +139,5 @@ public class WaveSpawner : MonoBehaviour
     void OnEnemyDestroyed()
     {
         enemiesRemaining--;
-        Debug.Log("적 사망");
     }
 }

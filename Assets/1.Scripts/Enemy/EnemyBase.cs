@@ -8,6 +8,7 @@ public abstract class EnemyBase : MonoBehaviour
     public float moveSpeed = 2f;
     public GameObject[] itemPrefabs;
     private ScoreManager scoreManager;
+    private PlayerUltimate playerUltimate;
 
     public event Action OnEnemyDestroyed;
 
@@ -15,6 +16,7 @@ public abstract class EnemyBase : MonoBehaviour
     {
         currentHealth = maxHealth;
         scoreManager = FindObjectOfType<ScoreManager>();
+        playerUltimate = FindObjectOfType<PlayerUltimate>();
     }
 
     protected virtual void OnEnable()
@@ -31,6 +33,7 @@ public abstract class EnemyBase : MonoBehaviour
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
+        playerUltimate.OnHitEnemy();
 
         if (currentHealth <= 0)
         {
@@ -40,6 +43,7 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected virtual void Die()
     {
+        playerUltimate.OnKillEnemy();
         scoreManager.AddKillScore();
         DropItem();
         OnEnemyDestroyed?.Invoke();

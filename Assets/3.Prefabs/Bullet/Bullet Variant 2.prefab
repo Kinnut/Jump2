@@ -101,6 +101,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Bullet (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 6404541088622165706, guid: 68ecfda204611ec4197043d2658a4718, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     - target: {fileID: 8243323923917343015, guid: 68ecfda204611ec4197043d2658a4718, type: 3}
       propertyPath: m_LocalScale.x
       value: 1
@@ -173,6 +177,10 @@ PrefabInstance:
     - target: {fileID: 6404541088622165706, guid: 68ecfda204611ec4197043d2658a4718, type: 3}
       propertyPath: m_Name
       value: Bullet (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6404541088622165706, guid: 68ecfda204611ec4197043d2658a4718, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
       objectReference: {fileID: 0}
     - target: {fileID: 8243323923917343015, guid: 68ecfda204611ec4197043d2658a4718, type: 3}
       propertyPath: m_LocalScale.x

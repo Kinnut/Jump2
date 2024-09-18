@@ -22,7 +22,7 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: 4f94c9fde17fe1a4cac0ccafa9ac467d, type: 3}
     - target: {fileID: 2272769046393630964, guid: 649c09b5f121a724495fbe53394c1c77, type: 3}
       propertyPath: m_Name
-      value: Orange Bullet Variant
+      value: Bullet Variant Orange
       objectReference: {fileID: 0}
     - target: {fileID: 3822944922809304857, guid: 649c09b5f121a724495fbe53394c1c77, type: 3}
       propertyPath: m_LocalPosition.x

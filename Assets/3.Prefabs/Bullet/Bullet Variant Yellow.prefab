@@ -18,7 +18,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6404541088622165706, guid: 68ecfda204611ec4197043d2658a4718, type: 3}
       propertyPath: m_Name
-      value: Yellow Bullet Variant
+      value: Bullet Variant Yellow
       objectReference: {fileID: 0}
     - target: {fileID: 6423980532104836162, guid: 68ecfda204611ec4197043d2658a4718, type: 3}
       propertyPath: m_Sprite

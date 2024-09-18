@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 147775844110061784, guid: 9e6531e4c05290449b2b7694ca3f5803, type: 3}
       propertyPath: m_Name
-      value: Red Bullet Variant
+      value: Bullet Variant Red
       objectReference: {fileID: 0}
     - target: {fileID: 273049646774213200, guid: 9e6531e4c05290449b2b7694ca3f5803, type: 3}
       propertyPath: m_Sprite

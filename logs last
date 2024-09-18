@@ -1,0 +1,313 @@
+warning: in the working copy of 'Assets/0.Scenes/1.PlayScene.unity', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/Assets/0.Scenes/1.PlayScene.unity b/Assets/0.Scenes/1.PlayScene.unity[m
+[1mindex 9b23c6b..0edf27e 100644[m
+[1m--- a/Assets/0.Scenes/1.PlayScene.unity[m
+[1m+++ b/Assets/0.Scenes/1.PlayScene.unity[m
+[36m@@ -2683,10 +2683,10 @@[m [mMonoBehaviour:[m
+   pools:[m
+   - tag: Normal_Enemy[m
+     prefab: {fileID: 5362438212887784715, guid: 93f0e0cee2a97ac4fb558c773c0f4463, type: 3}[m
+[31m-    initialSize: 15[m
+[32m+[m[32m    initialSize: 50[m
+   - tag: Strong_Enemy[m
+     prefab: {fileID: 9108856218975968939, guid: 0c1883621f38e4a46a358cc9770689cf, type: 3}[m
+[31m-    initialSize: 5[m
+[32m+[m[32m    initialSize: 10[m
+ --- !u!1 &663698557[m
+ GameObject:[m
+   m_ObjectHideFlags: 0[m
+[1mdiff --git a/Assets/1.Scripts/DynamicObjectPooler.cs b/Assets/1.Scripts/DynamicObjectPooler.cs[m
+[1mindex 9a79a2e..0944816 100644[m
+[1m--- a/Assets/1.Scripts/DynamicObjectPooler.cs[m
+[1m+++ b/Assets/1.Scripts/DynamicObjectPooler.cs[m
+[36m@@ -16,13 +16,14 @@[m [mpublic class DynamicObjectPooler : MonoBehaviour[m
+ [m
+     void Start()[m
+     {[m
+[32m+[m[32m        Debug.Log("DynamicObjectPooler Start È£ÃâµÊ");[m
+[32m+[m
+         poolDictionary = new Dictionary<string, Queue<GameObject>>();[m
+ [m
+         foreach (Pool pool in pools)[m
+         {[m
+             Queue<GameObject> objectPool = new Queue<GameObject>();[m
+ [m
+[31m-            // ÃÊ±â Ç® Å©±â¸¸Å­ ¿ÀºêÁ§Æ®¸¦ »ý¼ºÇÏ¿© Å¥¿¡ Ãß°¡[m
+             for (int i = 0; i < pool.initialSize; i++)[m
+             {[m
+                 GameObject obj = Instantiate(pool.prefab);[m
+[36m@@ -31,36 +32,96 @@[m [mpublic class DynamicObjectPooler : MonoBehaviour[m
+             }[m
+ [m
+             poolDictionary.Add(pool.tag, objectPool);[m
+[32m+[m[32m            Debug.Log("ÅÂ±× Ãß°¡µÊ: " + pool.tag + ", ÃÊ±â ¿ÀºêÁ§Æ® ¼ö: " + objectPool.Count);[m
+         }[m
+[32m+[m
+[32m+[m[32m        Debug.Log("Object Pooler ÃÊ±âÈ­ ¿Ï·á");[m
+     }[m
+ [m
+[32m+[m
+     public GameObject SpawnFromPool(string tag, Vector3 position, Quaternion rotation)[m
+     {[m
+[32m+[m[32m        Debug.Log("SpawnFromPool ÁøÀÔ - ÅÂ±×: " + tag);[m
+         if (!poolDictionary.ContainsKey(tag))[m
+         {[m
+[31m-            Debug.LogWarning("Pool with tag " + tag + " doesn't exist.");[m
+[32m+[m[32m            Debug.LogError("Ç®¿¡ ÇØ´ç ÅÂ±×°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù: " + tag);[m
+             return null;[m
+         }[m
+ [m
+         Queue<GameObject> pool = poolDictionary[tag];[m
+ [m
+[31m-        // Ç®¿¡ »ç¿ëÇÒ ¿ÀºêÁ§Æ®°¡ ¾øÀ¸¸é »õ·Î »ý¼º ÈÄ Ç®¿¡ Ãß°¡[m
+[32m+[m[32m        if (pool == null)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            Debug.LogError("¿ÀºêÁ§Æ® Ç®ÀÌ nullÀÔ´Ï´Ù: " + tag);[m
+[32m+[m[32m            return null;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        Debug.Log("ÇöÀç Ç®¿¡ ³²Àº ¿ÀºêÁ§Æ® ¼ö: " + pool.Count);[m
+[32m+[m
+[32m+[m[32m        // Ç®¿¡ µé¾î ÀÖ´Â ¿ÀºêÁ§Æ® Ãâ·Â[m
+[32m+[m[32m        foreach (var obj in pool)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            if (obj == null)[m
+[32m+[m[32m            {[m
+[32m+[m[32m                Debug.LogError("Ç® ³»ºÎ ¿ÀºêÁ§Æ®°¡ nullÀÔ´Ï´Ù.");[m
+[32m+[m[32m            }[m
+[32m+[m[32m            else[m
+[32m+[m[32m            {[m
+[32m+[m[32m                Debug.Log("Ç® ³»ºÎ ¿ÀºêÁ§Æ®: " + obj.name + ", È°¼º »óÅÂ: " + obj.activeSelf);[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m
+         if (pool.Count == 0)[m
+         {[m
+[31m-            Debug.Log("Pool empty, instantiating new object");[m
+[31m-            GameObject obj = Instantiate(pools.Find(p => p.tag == tag).prefab);[m
+[32m+[m[32m            Debug.Log("Pool empty, instantiating new object with tag: " + tag);[m
+[32m+[m[32m            Pool matchingPool = pools.Find(p => p.tag == tag);[m
+[32m+[m
+[32m+[m[32m            if (matchingPool == null)[m
+[32m+[m[32m            {[m
+[32m+[m[32m                Debug.LogError("No matching pool found for tag: " + tag);[m
+[32m+[m[32m                return null;[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            if (matchingPool.prefab == null)[m
+[32m+[m[32m            {[m
+[32m+[m[32m                Debug.LogError("ÇÁ¸®ÆÕÀÌ nullÀÔ´Ï´Ù. ÅÂ±×: " + tag);[m
+[32m+[m[32m                return null;[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            GameObject obj = Instantiate(matchingPool.prefab);[m
+[32m+[m[32m            if (obj == null)[m
+[32m+[m[32m            {[m
+[32m+[m[32m                Debug.LogError("¿ÀºêÁ§Æ® ÀÎ½ºÅÏ½ºÈ­ ½ÇÆÐ: " + tag);[m
+[32m+[m[32m                return null;[m
+[32m+[m[32m            }[m
+[32m+[m
+             obj.SetActive(false);[m
+             pool.Enqueue(obj);[m
+[32m+[m[32m            Debug.Log("»õ·Î¿î ¿ÀºêÁ§Æ® »ý¼º ¹× Å¥¿¡ Ãß°¡µÊ: " + obj.name);[m
+         }[m
+ [m
+[32m+[m
+         GameObject objectToSpawn = pool.Dequeue();[m
+ [m
+[32m+[m[32m        if (objectToSpawn == null)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            Debug.LogError("DequeueµÈ ¿ÀºêÁ§Æ®°¡ nullÀÔ´Ï´Ù. ÅÂ±×: " + tag);[m
+[32m+[m[32m            return null;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        else[m
+[32m+[m[32m        {[m
+[32m+[m[32m            Debug.Log("DequeueµÈ ¿ÀºêÁ§Æ®: " + objectToSpawn.name);[m
+[32m+[m[32m        }[m
+[32m+[m
+         objectToSpawn.SetActive(true);[m
+         objectToSpawn.transform.position = position;[m
+         objectToSpawn.transform.rotation = rotation;[m
+ [m
+         pool.Enqueue(objectToSpawn);  // ¿ÀºêÁ§Æ®¸¦ ´Ù½Ã Ç®¿¡ ¹ÝÈ¯[m
+ [m
+[32m+[m[32m        Debug.Log("¿ÀºêÁ§Æ® È°¼ºÈ­ ¹× ¹ÝÈ¯µÊ: " + objectToSpawn.name);[m
+         return objectToSpawn;[m
+     }[m
+[32m+[m
+ }[m
+[1mdiff --git a/Assets/1.Scripts/WaveSpawner.cs b/Assets/1.Scripts/WaveSpawner.cs[m
+[1mindex 3334369..478c597 100644[m
+[1m--- a/Assets/1.Scripts/WaveSpawner.cs[m
+[1m+++ b/Assets/1.Scripts/WaveSpawner.cs[m
+[36m@@ -19,100 +19,133 @@[m [mpublic class WaveSpawner : MonoBehaviour[m
+ [m
+     void Start()[m
+     {[m
+[32m+[m[32m        Debug.Log("WaveSpawner Start È£ÃâµÊ");[m
+[32m+[m
+[32m+[m[32m        if (objectPooler == null)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            Debug.LogError("Object Pooler°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (spawnPoints == null || spawnPoints.Length == 0)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            Debug.LogError("½ºÆù Æ÷ÀÎÆ®°¡ ¼³Á¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.");[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+         StartCoroutine(StartNextWave());[m
+[31m-        Debug.Log("°ÔÀÓ½ÃÀÛ");[m
+[32m+[m[32m        Debug.Log("ÄÚ·çÆ¾ StartNextWave È£ÃâµÊ");[m
+     }[m
+ [m
+     void Update()[m
+     {[m
+[31m-        // ³²Àº ÀûÀÌ ¾ø°í ¿þÀÌºê°¡ ÁøÇà ÁßÀÌ ¾Æ´Ñ »óÅÂ¿¡¼­ ´ÙÀ½ ¿þÀÌºê ½ÃÀÛ[m
+         if (enemiesRemaining <= 0 && !waveInProgress)[m
+         {[m
+[32m+[m[32m            Debug.Log("´ÙÀ½ ¿þÀÌºê ½ÃÀÛ");[m
+             StartCoroutine(StartNextWave());[m
+         }[m
+     }[m
+ [m
+[32m+[m
+     // ¿þÀÌºê ½ÃÀÛ[m
+     IEnumerator StartNextWave()[m
+     {[m
+[31m-        Debug.Log("¿þÀÌºê½ÃÀÛ");[m
+[32m+[m[32m        Debug.Log("¿þÀÌºê ½ÃÀÛ");[m
+         waveInProgress = true;[m
+ [m
+[31m-        int enemiesToSpawn = startEnemiesPerWave + (currentWave / 2) * 2;  // 2¿þÀÌºê¸¶´Ù 2¸¶¸® Ãß°¡[m
+[31m-        int strongEnemyCount = Mathf.CeilToInt(enemiesToSpawn * 0.1f);     // 20%´Â °­È­µÈ ¸ó½ºÅÍ[m
+[32m+[m[32m        int enemiesToSpawn = startEnemiesPerWave + (currentWave / 2) * 2;[m
+[32m+[m[32m        int strongEnemyCount = Mathf.CeilToInt(enemiesToSpawn * 0.1f);[m
+         int normalEnemyCount = enemiesToSpawn - strongEnemyCount;[m
+ [m
+         enemiesRemaining = enemiesToSpawn;[m
+[31m-        List<int> availableSpawnPoints = new List<int> { 0, 1, 2, 3 };  // ½ºÆù ÁöÁ¡ ¸®½ºÆ®[m
+[32m+[m[32m        Debug.Log("¼ÒÈ¯ÇÒ Àû ¼ö: " + enemiesRemaining);[m
+[32m+[m
+[32m+[m[32m        List<int> availableSpawnPoints = new List<int> { 0, 1, 2, 3 };[m
+ [m
+         while (normalEnemyCount > 0 || strongEnemyCount > 0)[m
+         {[m
+[31m-            Debug.Log("while¹® ½ÃÀÛ");[m
+[31m-            // µÎ °³ÀÇ ·£´ý ½ºÆù Æ÷ÀÎÆ® ¼±ÅÃ (µ¿½Ã¿¡ µÎ ¸¶¸® ¼ÒÈ¯ X)[m
+[32m+[m[32m            Debug.Log("While¹® ÁøÀÔ");[m
+             List<int> spawnIndices = GetRandomSpawnIndices(availableSpawnPoints);[m
+[31m-            Debug.Log("¿À·ù1");[m
+[31m-            // Ã¹ ¹øÂ° ½ºÆù Æ÷ÀÎÆ®¿¡ ¸ó½ºÅÍ ¼ÒÈ¯[m
+[31m-            if (normalEnemyCount > 0)[m
+[31m-            {[m
+[31m-                SpawnEnemy(normalEnemyTag, spawnIndices[0]);  // Ç®¿¡¼­ ±âº» ¸ó½ºÅÍ ¼ÒÈ¯[m
+[31m-                normalEnemyCount--;[m
+[31m-            }[m
+[31m-            else if (strongEnemyCount > 0)[m
+[31m-            {[m
+[31m-                SpawnEnemy(strongEnemyTag, spawnIndices[0]);  // Ç®¿¡¼­ °­È­ ¸ó½ºÅÍ ¼ÒÈ¯[m
+[31m-                strongEnemyCount--;[m
+[31m-            }[m
+ [m
+[31m-            // µÎ ¹øÂ° ½ºÆù Æ÷ÀÎÆ®¿¡ ¸ó½ºÅÍ ¼ÒÈ¯[m
+             if (normalEnemyCount > 0)[m
+             {[m
+[31m-                SpawnEnemy(normalEnemyTag, spawnIndices[1]);  // Ç®¿¡¼­ ±âº» ¸ó½ºÅÍ ¼ÒÈ¯[m
+[32m+[m[32m                Debug.Log("Normal Enemy ¼ÒÈ¯ Áß");[m
+[32m+[m[32m                SpawnEnemy(normalEnemyTag, spawnIndices[0]);[m
+                 normalEnemyCount--;[m
+             }[m
+             else if (strongEnemyCount > 0)[m
+             {[m
+[31m-                SpawnEnemy(strongEnemyTag, spawnIndices[1]);  // Ç®¿¡¼­ °­È­ ¸ó½ºÅÍ ¼ÒÈ¯[m
+[32m+[m[32m                Debug.Log("Strong Enemy ¼ÒÈ¯ Áß");[m
+[32m+[m[32m                SpawnEnemy(strongEnemyTag, spawnIndices[0]);[m
+                 strongEnemyCount--;[m
+             }[m
+ [m
+[31m-            yield return new WaitForSeconds(spawnInterval);  // ¼ÒÈ¯ °£°Ý ´ë±â[m
+[32m+[m[32m            yield return new WaitForSeconds(spawnInterval);[m
+         }[m
+ [m
+[31m-        // ¸ó½ºÅÍ°¡ ¸ðµÎ ¼ÒÈ¯µÈ ÈÄ, ÀüºÎ Ã³Ä¡µÉ ¶§±îÁö ´ë±â[m
+         while (enemiesRemaining > 0)[m
+         {[m
+[31m-            yield return null;  // °è¼Ó ´ë±â[m
+[32m+[m[32m            yield return null;[m
+         }[m
+ [m
+[31m-        // ´ÙÀ½ ¿þÀÌºê ½ÃÀÛ Àü ´ë±â ½Ã°£[m
+         yield return new WaitForSeconds(waveWaitTime);[m
+ [m
+[31m-        currentWave++;  // ¿þÀÌºê Áõ°¡[m
+[31m-        waveInProgress = false;  // ´ÙÀ½ ¿þÀÌºê ÁøÇà °¡´É »óÅÂ[m
+[32m+[m[32m        currentWave++;[m
+[32m+[m[32m        waveInProgress = false;[m
+     }[m
+ [m
+[32m+[m
+[32m+[m
+     // Àû ¼ÒÈ¯ ¸Þ¼­µå (DynamicObjectPooler¸¦ »ç¿ëÇÏ¿© Àû ¼ÒÈ¯)[m
+     void SpawnEnemy(string enemyTag, int spawnIndex)[m
+     {[m
+[31m-        Debug.Log("¿À·ù2");[m
+[32m+[m[32m        Debug.Log("SpawnEnemy È£ÃâµÊ: " + enemyTag);[m
+[32m+[m[32m        if (objectPooler == null)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            Debug.LogError("Object Pooler°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (spawnPoints == null || spawnPoints.Length == 0)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            Debug.LogError("½ºÆù Æ÷ÀÎÆ® ¹è¿­ÀÌ ºñ¾îÀÖ½À´Ï´Ù.");[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (spawnIndex < 0 || spawnIndex >= spawnPoints.Length)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            Debug.LogError("Àß¸øµÈ ½ºÆù ÀÎµ¦½º: " + spawnIndex);[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+         Transform spawnPoint = spawnPoints[spawnIndex];[m
+ [m
+         // ObjectPooler¿¡¼­ Àû ¼ÒÈ¯[m
+         GameObject enemyObject = objectPooler.SpawnFromPool(enemyTag, spawnPoint.position, Quaternion.identity);[m
+ [m
+[31m-        EnemyBase enemy = enemyObject.GetComponent<EnemyBase>(); // Enemy ½ºÅ©¸³Æ®¸¦ °¡Á®¿È[m
+[31m-        if (enemy != null)[m
+[32m+[m[32m        if (enemyObject == null)[m
+         {[m
+[31m-            // ÀûÀÌ ¼ÒÈ¯µÉ ¶§ OnEnemyDestroyed ÀÌº¥Æ®¸¦ ¿¬°á[m
+[31m-            enemy.OnEnemyDestroyed += OnEnemyDestroyed;[m
+[31m-            Debug.Log("Àû ÀÌº¥Æ® ¿¬°á ¿Ï·á");[m
+[32m+[m[32m            Debug.LogError("Àû »ý¼º ½ÇÆÐ: " + enemyTag + " Ç®¿¡¼­ ÀûÀ» °¡Á®¿ÀÁö ¸øÇß½À´Ï´Ù.");[m
+[32m+[m[32m            return;[m
+         }[m
+         else[m
+         {[m
+[31m-            Debug.LogWarning("Àû¿¡ Enemy ½ºÅ©¸³Æ®°¡ ºÙ¾î ÀÖÁö ¾Ê½À´Ï´Ù.");[m
+[32m+[m[32m            Debug.Log("SpawnFromPool¿¡¼­ Àû ¼ÒÈ¯ ¼º°ø: " + enemyObject.name);[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m
+[32m+[m[32m        // EnemyBase¸¦ °¡Á®¿È[m
+[32m+[m[32m        EnemyBase enemyBase = enemyObject.GetComponent<EnemyBase>();[m
+[32m+[m[32m        if (enemyBase == null)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            Debug.LogError("EnemyBase ½ºÅ©¸³Æ®°¡ ÇÁ¸®ÆÕ¿¡ ºÙ¾î ÀÖÁö ¾Ê½À´Ï´Ù. ÅÂ±×: " + enemyTag);[m
+[32m+[m[32m            return;[m
+         }[m
+[32m+[m
+[32m+[m[32m        enemyBase.OnEnemyDestroyed += OnEnemyDestroyed;[m
+[32m+[m[32m        Debug.Log("Àû ¼ÒÈ¯ ¿Ï·á");[m
+     }[m
+ [m
+[32m+[m
+     // ·£´ýÀ¸·Î µÎ °³ÀÇ ½ºÆù Æ÷ÀÎÆ® ¼±ÅÃ[m
+     List<int> GetRandomSpawnIndices(List<int> availableSpawnPoints)[m
+     {[m

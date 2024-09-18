@@ -36,11 +36,12 @@ public class PlayerBullet : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D hitInfo)
     {
-        Enemy enemy = hitInfo.GetComponent<Enemy>();
+        EnemyBase enemy = hitInfo.GetComponent<EnemyBase>();
         if (enemy != null)
         {
             enemy.TakeDamage(damage);
             Destroy(gameObject);
         }
+        Destroy(gameObject);
     }
 }

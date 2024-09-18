@@ -7,7 +7,7 @@ public class PlayerShooting : MonoBehaviour
     public float maxChargeTime = 2.5f;
     public float minDamage = 10f;  // 최소 데미지
     public float maxDamage = 50f;  // 최대 데미지
-    public float fireRate = 0.5f;
+    public float fireRate = 0.5f;  // 자동 공격 속도
 
     public GameObject basicBulletPrefab;  // 기본 공격에 사용되는 총알 프리팹
     public GameObject chargedBulletPref1; // 차지 공격에 사용되는 총알 프리팹들 (변경되지 않음)
@@ -26,6 +26,7 @@ public class PlayerShooting : MonoBehaviour
     private bool isCharging = false;
     private float nextFireTime = 0f;
 
+    private bool isAutoShooting = false; // 자동 공격 활성화 여부
     private int currentBulletIndex = 0;  // 현재 사용 중인 총알 프리팹 인덱스
     public GameObject[] bulletPrefabs;   // 변경 가능한 총알 프리팹 배열
 
@@ -36,49 +37,65 @@ public class PlayerShooting : MonoBehaviour
 
     void Update()
     {
+        // C키로 자동 공격 활성화/비활성화
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            isAutoShooting = !isAutoShooting;
+            Debug.Log("자동 공격: " + (isAutoShooting ? "활성화됨" : "비활성화됨"));
+        }
+
+        // 자동 공격이 활성화된 경우 일정 시간마다 기본 총알 발사
+        if (isAutoShooting && Time.time >= nextFireTime)
+        {
+            ShootBasicBullet();
+            nextFireTime = Time.time + fireRate;
+        }
+
+        // 자동 공격이 비활성화된 경우 마우스 좌클릭으로 수동 공격
+        if (!isAutoShooting && Input.GetMouseButtonDown(0) && Time.time >= nextFireTime)
+        {
+            ShootBasicBullet();
+            nextFireTime = Time.time + fireRate;
+        }
+
+        // 차지 공격 (스페이스바로 충전)
         if (chargeGaugeImage != null && !isCharging)
         {
             chargeGaugeImage.fillAmount = 0f;
         }
 
-        if (Time.time >= nextFireTime)
+        // 차지 공격 충전 (스페이스바 누름)
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (Input.GetMouseButtonDown(0))
+            isCharging = true;
+            chargeTime = 0f;
+        }
+
+        if (isCharging && Input.GetKey(KeyCode.Space))
+        {
+            chargeTime += Time.deltaTime;
+            chargeTime = Mathf.Clamp(chargeTime, 0, maxChargeTime);
+
+            if (chargeGaugeImage != null && chargeTime >= minChargeTime)
             {
-                isCharging = true;
-                chargeTime = 0f;
+                chargeGaugeImage.fillAmount = (chargeTime - minChargeTime) / (maxChargeTime - minChargeTime);
+            }
+        }
+
+        // 스페이스바를 떼면 차지 공격 발사
+        if (Input.GetKeyUp(KeyCode.Space) && isCharging)
+        {
+            isCharging = false;
+
+            // 최소 차지 시간이 0.5초 이상일 때만 차지 공격 발사
+            if (chargeTime >= minChargeTime)
+            {
+                ShootChargedBullet();  // 차지 공격
             }
 
-            if (isCharging && Input.GetMouseButton(0))
+            if (chargeGaugeImage != null)
             {
-                chargeTime += Time.deltaTime;
-                chargeTime = Mathf.Clamp(chargeTime, 0, maxChargeTime);
-
-                if (chargeGaugeImage != null && chargeTime >= minChargeTime)
-                {
-                    chargeGaugeImage.fillAmount = (chargeTime - minChargeTime) / (maxChargeTime - minChargeTime);
-                }
-            }
-
-            if (Input.GetMouseButtonUp(0) && isCharging)
-            {
-                isCharging = false;
-
-                if (chargeTime < minChargeTime)
-                {
-                    ShootBasicBullet();  // 기본 공격
-                }
-                else
-                {
-                    ShootChargedBullet();  // 차지 공격
-                }
-
-                nextFireTime = Time.time + fireRate;
-
-                if (chargeGaugeImage != null)
-                {
-                    chargeGaugeImage.fillAmount = 0f;
-                }
+                chargeGaugeImage.fillAmount = 0f;
             }
         }
     }
@@ -132,29 +149,21 @@ public class PlayerShooting : MonoBehaviour
         PlayShootingSound();
     }
 
-    // 기본 총알 프리팹 변경 (아이템 먹을 때)
     public void ChangeBasicBulletPrefab()
     {
-        if (currentBulletIndex < bulletPrefabs.Length - 1)
+        if (bulletPrefabs.Length == 0)
         {
-            currentBulletIndex++;
-            basicBulletPrefab = bulletPrefabs[currentBulletIndex];
-            StrengthenBullets();
-            Debug.Log("기본 공격의 총알 프리팹이 변경되었습니다.");
+            Debug.LogWarning("총알 프리팹 배열이 비어있습니다.");
+            return;
         }
-        else
-        {
-            Debug.Log("더 이상 변경할 프리팹이 없습니다. 마지막 프리팹을 유지합니다.");
-        }
+
+        // 현재 총알 인덱스를 증가시키고 배열의 범위를 초과하면 처음으로 돌아감
+        currentBulletIndex = (currentBulletIndex + 1) % bulletPrefabs.Length;
+        basicBulletPrefab = bulletPrefabs[currentBulletIndex];
+
+        Debug.Log("기본 공격의 총알 프리팹이 변경되었습니다. 현재 프리팹 인덱스: " + currentBulletIndex);
     }
 
-    // 총알 강화 (아이템 먹을 때)
-    public void StrengthenBullets()
-    {
-        minDamage += 10f;  // 최소 데미지 10 증가
-        maxDamage += 10f;  // 최대 데미지 10 증가
-        Debug.Log("총알이 강화되었습니다. 최소 데미지: " + minDamage + ", 최대 데미지: " + maxDamage);
-    }
 
     // 슈팅 사운드를 재생하는 함수
     void PlayShootingSound()

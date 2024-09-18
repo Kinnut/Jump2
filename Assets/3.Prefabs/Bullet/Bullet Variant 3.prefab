@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3184294558566763740}
   - component: {fileID: 353107345739470436}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GameObject (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ GameObject:
   m_Component:
   - component: {fileID: 840634454323019122}
   - component: {fileID: 4581834198490691721}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GameObject (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -178,7 +178,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6920179169818829817}
   - component: {fileID: 8299075773256553928}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -270,7 +270,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6404541088622165706, guid: 68ecfda204611ec4197043d2658a4718, type: 3}
       propertyPath: m_Name
-      value: Bullet 1 Variant
+      value: Bullet Variant 3
       objectReference: {fileID: 0}
     - target: {fileID: 8243323923917343015, guid: 68ecfda204611ec4197043d2658a4718, type: 3}
       propertyPath: m_LocalPosition.x

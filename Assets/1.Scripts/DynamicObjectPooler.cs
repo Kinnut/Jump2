@@ -22,7 +22,6 @@ public class DynamicObjectPooler : MonoBehaviour
         {
             Queue<GameObject> objectPool = new Queue<GameObject>();
 
-            // 초기 풀 크기만큼 오브젝트를 생성하여 큐에 추가
             for (int i = 0; i < pool.initialSize; i++)
             {
                 GameObject obj = Instantiate(pool.prefab);
@@ -38,27 +37,37 @@ public class DynamicObjectPooler : MonoBehaviour
     {
         if (!poolDictionary.ContainsKey(tag))
         {
-            Debug.LogWarning("Pool with tag " + tag + " doesn't exist.");
+            Debug.LogError("풀에 해당 태그가 존재하지 않습니다: " + tag);
             return null;
         }
 
         Queue<GameObject> pool = poolDictionary[tag];
 
-        // 풀에 사용할 오브젝트가 없으면 새로 생성 후 풀에 추가
+        if (pool == null)
+        {
+            Debug.LogError("오브젝트 풀이 null입니다: " + tag);
+            return null;
+        }
+
         if (pool.Count == 0)
         {
-            Debug.Log("Pool empty, instantiating new object");
-            GameObject obj = Instantiate(pools.Find(p => p.tag == tag).prefab);
+            Pool matchingPool = pools.Find(p => p.tag == tag);
+
+            if (matchingPool == null || matchingPool.prefab == null)
+            {
+                Debug.LogError("해당 태그에 맞는 풀 또는 프리팹이 없습니다: " + tag);
+                return null;
+            }
+
+            GameObject obj = Instantiate(matchingPool.prefab);
             obj.SetActive(false);
             pool.Enqueue(obj);
         }
 
         GameObject objectToSpawn = pool.Dequeue();
-
         objectToSpawn.SetActive(true);
         objectToSpawn.transform.position = position;
         objectToSpawn.transform.rotation = rotation;
-
         pool.Enqueue(objectToSpawn);  // 오브젝트를 다시 풀에 반환
 
         return objectToSpawn;
