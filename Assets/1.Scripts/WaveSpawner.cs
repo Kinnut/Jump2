@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro; // TextMeshPro를 사용하기 위해 추가
 
 public class WaveSpawner : MonoBehaviour
 {
@@ -17,6 +18,8 @@ public class WaveSpawner : MonoBehaviour
     private int enemiesRemaining;          // 남아있는 적 수
     private bool waveInProgress = false;   // 웨이브가 진행 중인지 여부
 
+    public TextMeshProUGUI waveText;       // TMP로 웨이브 번호를 표시할 TextMeshProUGUI 필드
+
     void Start()
     {
         if (objectPooler == null || spawnPoints == null || spawnPoints.Length == 0)
@@ -25,6 +28,7 @@ public class WaveSpawner : MonoBehaviour
             return;
         }
 
+        UpdateWaveText(); // 시작 시 웨이브 번호 표시
         StartCoroutine(StartNextWave());
     }
 
@@ -80,7 +84,6 @@ public class WaveSpawner : MonoBehaviour
             yield return new WaitForSeconds(spawnInterval);
         }
 
-
         while (enemiesRemaining > 0)
         {
             yield return null;
@@ -89,6 +92,7 @@ public class WaveSpawner : MonoBehaviour
         yield return new WaitForSeconds(waveWaitTime);
 
         currentWave++;
+        UpdateWaveText();  // 웨이브 번호 업데이트
         waveInProgress = false;
     }
 
@@ -139,5 +143,14 @@ public class WaveSpawner : MonoBehaviour
     void OnEnemyDestroyed()
     {
         enemiesRemaining--;
+    }
+
+    // 웨이브 번호 텍스트 업데이트
+    void UpdateWaveText()
+    {
+        if (waveText != null)
+        {
+            waveText.text = "Wave " + currentWave;
+        }
     }
 }

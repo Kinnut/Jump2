@@ -1,7 +1,7 @@
 using Cinemachine;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
+using TMPro;
 
 public class Player : MonoBehaviour
 {
@@ -19,6 +19,15 @@ public class Player : MonoBehaviour
 
     private float playTime = 0f;                   // 플레이 타임 기록
 
+    // 사망 UI 및 카운트다운 관련 변수
+    public GameObject deathUI;                     // 사망 UI 패널
+    public TextMeshProUGUI countdownText;          // 카운트다운 텍스트 (TMP)
+    private float respawnTime = 10f;               // 부활까지의 시간
+    private bool isDead = false;                   // 플레이어 사망 상태 여부
+
+    private Rigidbody2D rb;                        // 플레이어 Rigidbody2D
+    private Collider2D playerCollider;             // 플레이어 충돌체
+
     void Start()
     {
         maxHealth = health;                        // 최대 체력 설정
@@ -26,15 +35,32 @@ public class Player : MonoBehaviour
         UpdateHealthBar();                         // 체력바 업데이트
         impulseSource = GetComponent<CinemachineImpulseSource>();  // Impulse Source 설정
         playerShooting = GetComponent<PlayerShooting>();           // PlayerShooting 스크립트 참조
+        rb = GetComponent<Rigidbody2D>();          // Rigidbody2D 참조
+        playerCollider = GetComponent<Collider2D>(); // Collider2D 참조
+
+        deathUI.SetActive(false);                  // 시작 시 사망 UI 비활성화
     }
 
     void Update()
     {
         playTime += Time.deltaTime;                // 플레이 타임 측정
+
+        if (isDead && respawnTime > 0)
+        {
+            respawnTime -= Time.deltaTime;
+            countdownText.text = "RESPAWN : " + Mathf.Ceil(respawnTime).ToString();  // 남은 시간을 CoolTime 형식으로 표시
+
+            if (respawnTime <= 0)
+            {
+                Respawn();
+            }
+        }
     }
 
     public void TakeDamage(float damage)
     {
+        if (isDead) return; // 사망 중에는 데미지를 받지 않음
+
         health -= damage;
 
         if (health < 0)
@@ -57,6 +83,8 @@ public class Player : MonoBehaviour
 
     public void Heal(float amount)
     {
+        if (isDead) return; // 사망 중에는 회복 불가
+
         health += amount;
 
         health = Mathf.Clamp(health, 0, maxHealth);
@@ -97,15 +125,48 @@ public class Player : MonoBehaviour
         }
     }
 
+    // 플레이어 사망 처리
     void Die()
     {
         Debug.Log("플레이어 사망");
+        isDead = true;
 
-        // 사망 시 점수 및 플레이 타임을 저장하고 엔딩 씬으로 이동
-        PlayerPrefs.SetFloat("FinalScore", scoreManager.GetCurrentScore());
-        PlayerPrefs.SetFloat("PlayTime", playTime);
+        // 사망 UI 활성화 및 카운트다운 초기화
+        deathUI.SetActive(true);
+        respawnTime = 10f;  // 10초로 초기화
 
-        // 엔딩 씬으로 이동
-        SceneManager.LoadScene("2.EndingScene");
+        // 플레이어 이동 및 공격 비활성화
+        DisablePlayer();
+    }
+
+    // 플레이어 부활 처리
+    void Respawn()
+    {
+        Debug.Log("플레이어 부활");
+        isDead = false;
+        health = maxHealth;      // 체력 회복
+        UpdateHealthBar();       // 체력바 업데이트
+
+        // 플레이어 이동 및 공격 활성화
+        EnablePlayer();
+
+        deathUI.SetActive(false); // 사망 UI 비활성화
+    }
+
+    // 플레이어 비활성화
+    void DisablePlayer()
+    {
+        playerShooting.enabled = false;   // 플레이어 슈팅 비활성화
+        rb.velocity = Vector2.zero;       // 플레이어 이동 중지
+        rb.isKinematic = true;            // Rigidbody의 물리 반응 비활성화
+        playerCollider.enabled = false;   // 충돌 비활성화
+    }
+
+    // 플레이어 활성화
+    void EnablePlayer()
+    {
+        playerShooting.enabled = true;    // 플레이어 슈팅 활성화
+        rb.isKinematic = false;           // Rigidbody의 물리 반응 활성화
+        playerCollider.enabled = true;    // 충돌 활성화
     }
 }

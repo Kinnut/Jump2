@@ -178,5 +178,6 @@ MonoBehaviour:
   - {fileID: 3957860818038650986, guid: 930cf8db138ddff47bd4f7a3cec27362, type: 3}
   - {fileID: 5207017327178400053, guid: 05f63d57730c1d442b0fb12dc5a36b8d, type: 3}
   - {fileID: 8531981420261227904, guid: f3a49081c3017344b8a1817d9cf98746, type: 3}
+  coinReward: 10
   explosionRange: 2
-  damage: 50
+  damage: 10

@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1881052383983213776, guid: 23261ca469013a042a4d65b844637466, type: 3}
       propertyPath: m_Name
-      value: EnemyBullet Variant
+      value: EnemyBullet Variant Yellow
       objectReference: {fileID: 0}
     - target: {fileID: 2389365849509952893, guid: 23261ca469013a042a4d65b844637466, type: 3}
       propertyPath: m_Sprite

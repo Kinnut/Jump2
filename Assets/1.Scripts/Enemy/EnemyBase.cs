@@ -9,6 +9,10 @@ public abstract class EnemyBase : MonoBehaviour
     public GameObject[] itemPrefabs;
     private ScoreManager scoreManager;
     private PlayerUltimate playerUltimate;
+    private CoinManager coinManager;  // 코인 매니저 참조
+
+    public int coinReward = 10;  // 몬스터 처치 시 제공하는 코인 수
+    private bool lastHitByPlayer = false;  // 마지막으로 공격한 대상이 플레이어인지 여부
 
     public event Action OnEnemyDestroyed;
 
@@ -17,23 +21,29 @@ public abstract class EnemyBase : MonoBehaviour
         currentHealth = maxHealth;
         scoreManager = FindObjectOfType<ScoreManager>();
         playerUltimate = FindObjectOfType<PlayerUltimate>();
+        coinManager = FindObjectOfType<CoinManager>();  // 코인 매니저를 찾음
     }
 
     protected virtual void OnEnable()
     {
         currentHealth = maxHealth;
+        lastHitByPlayer = false;  // 초기화
     }
 
-    // 여기에서 virtual로 Update 메서드 정의
     protected virtual void Update()
     {
-        // 기본적인 적의 업데이트 로직을 작성하거나, 자식 클래스에서 재정의할 수 있게 합니다.
+        // 기본적인 적의 업데이트 로직을 작성하거나, 자식 클래스에서 재정의
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, bool isPlayer)
     {
         currentHealth -= damage;
-        playerUltimate.OnHitEnemy();
+
+        if (isPlayer)
+        {
+            lastHitByPlayer = true;  // 플레이어가 마지막으로 공격했음을 기록
+            playerUltimate.OnHitEnemy();  // 플레이어 궁극기 게이지 충전
+        }
 
         if (currentHealth <= 0)
         {
@@ -43,17 +53,27 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected virtual void Die()
     {
-        playerUltimate.OnKillEnemy();
-        scoreManager.AddKillScore();
+        if (lastHitByPlayer)
+        {
+            playerUltimate.OnKillEnemy();
+            scoreManager.AddKillScore();
+
+            // 코인 획득 로직 추가
+            if (coinManager != null)
+            {
+                coinManager.AddCoins(coinReward);  // 플레이어가 처치했을 때만 코인 추가
+            }
+        }
+
         DropItem();
         OnEnemyDestroyed?.Invoke();
-        gameObject.SetActive(false); // 오브젝트 풀링 사용
+        gameObject.SetActive(false);
     }
 
     protected void DropItem()
     {
         float dropChance = UnityEngine.Random.Range(0f, 1f);
-        if (dropChance <= 0.2f)
+        if (dropChance <= 0.05f)
         {
             int randomIndex = UnityEngine.Random.Range(0, itemPrefabs.Length);
             Instantiate(itemPrefabs[randomIndex], transform.position, Quaternion.identity);

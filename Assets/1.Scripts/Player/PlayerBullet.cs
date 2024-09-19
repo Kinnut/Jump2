@@ -39,9 +39,10 @@ public class PlayerBullet : MonoBehaviour
         EnemyBase enemy = hitInfo.GetComponent<EnemyBase>();
         if (enemy != null)
         {
-            enemy.TakeDamage(damage);
+            enemy.TakeDamage(damage, true);  // true를 전달하여 플레이어가 공격했음을 알림
             Destroy(gameObject);
         }
         Destroy(gameObject);
     }
+
 }

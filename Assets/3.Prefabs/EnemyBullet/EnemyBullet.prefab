@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7488252252179253542}
   - component: {fileID: 5996877552980732371}
   - component: {fileID: -2483630353682289328}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: EnemyBullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -171,5 +171,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee5437156177592428bbe791f355d1c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 20
+  speed: 10
   lifeTime: 5

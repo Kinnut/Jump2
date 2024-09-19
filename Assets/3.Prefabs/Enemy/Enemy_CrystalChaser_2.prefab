@@ -62,11 +62,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2695290129504709170, guid: 93f0e0cee2a97ac4fb558c773c0f4463, type: 3}
       propertyPath: damage
-      value: 100
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 2695290129504709170, guid: 93f0e0cee2a97ac4fb558c773c0f4463, type: 3}
       propertyPath: maxHealth
-      value: 200
+      value: 150
+      objectReference: {fileID: 0}
+    - target: {fileID: 2695290129504709170, guid: 93f0e0cee2a97ac4fb558c773c0f4463, type: 3}
+      propertyPath: coinReward
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 5362438212887784715, guid: 93f0e0cee2a97ac4fb558c773c0f4463, type: 3}
       propertyPath: m_Name

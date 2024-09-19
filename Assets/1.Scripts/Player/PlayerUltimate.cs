@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro; // TextMeshPro를 사용하기 위해 추가
 
 public class PlayerUltimate : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class PlayerUltimate : MonoBehaviour
     private float timeSinceLastCharge = 0f; // 시간 충전을 위한 타이머
 
     public Image ultimateBar;  // 궁극기 게이지 UI (필어마운트)
+    public TextMeshProUGUI ultimatePercentageText; // 궁극기 퍼센트 표시 텍스트 (TMP)
 
     private bool canUseUltimate = false;  // 궁극기 사용 가능 여부
 
@@ -36,6 +38,12 @@ public class PlayerUltimate : MonoBehaviour
         if (ultimateBar != null)
         {
             ultimateBar.fillAmount = ultimateCharge / 100f;
+        }
+
+        // 궁극기 퍼센트 텍스트 업데이트
+        if (ultimatePercentageText != null)
+        {
+            ultimatePercentageText.text = Mathf.RoundToInt(ultimateCharge) + "%";  // 예: 58%
         }
 
         // 궁극기 사용 가능 여부 확인
@@ -70,6 +78,12 @@ public class PlayerUltimate : MonoBehaviour
         if (ultimateBar != null)
         {
             ultimateBar.fillAmount = 0f;  // UI 리셋
+        }
+
+        // 궁극기 퍼센트 텍스트도 리셋
+        if (ultimatePercentageText != null)
+        {
+            ultimatePercentageText.text = "0%";
         }
     }
 }
