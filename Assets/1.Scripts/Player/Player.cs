@@ -1,54 +1,56 @@
 using Cinemachine;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class Player : MonoBehaviour
 {
-    public float health = 100f;                    // 플레이어의 체력
-    public Image healthBarImage;                   // 체력바 이미지
-    private float maxHealth;                       // 최대 체력
+    // 기존 변수들
+    public float health = 100f;
+    public Image healthBarImage;
+    private float maxHealth;
 
-    private CinemachineImpulseSource impulseSource; // Impulse Source 참조
-    public float speed = 5f;                       // 기본 이동 속도
-    private float defaultSpeed;                    // 기본 속도 저장
-    private bool isBoosted = false;                // 속도 부스트 여부
+    private CinemachineImpulseSource impulseSource;
+    public float speed = 5f;
+    private float defaultSpeed;
+    private bool isBoosted = false;
 
-    private PlayerShooting playerShooting;         // PlayerShooting 스크립트 참조
-    public ScoreManager scoreManager;              // ScoreManager 참조 (점수 관리)
+    private PlayerShooting playerShooting;
+    private PlayerMovement playerMovement;  // PlayerMovement 스크립트 참조
+    public ScoreManager scoreManager;
 
-    private float playTime = 0f;                   // 플레이 타임 기록
+    private float playTime = 0f;
 
-    // 사망 UI 및 카운트다운 관련 변수
-    public GameObject deathUI;                     // 사망 UI 패널
-    public TextMeshProUGUI countdownText;          // 카운트다운 텍스트 (TMP)
-    private float respawnTime = 10f;               // 부활까지의 시간
-    private bool isDead = false;                   // 플레이어 사망 상태 여부
+    public GameObject deathUI;
+    public TextMeshProUGUI countdownText;
+    private float respawnTime = 10f;
+    public bool isDead = false;
 
-    private Rigidbody2D rb;                        // 플레이어 Rigidbody2D
-    private Collider2D playerCollider;             // 플레이어 충돌체
+    private Rigidbody2D rb;
+    private Collider2D playerCollider;
 
     void Start()
     {
-        maxHealth = health;                        // 최대 체력 설정
-        defaultSpeed = speed;                      // 기본 속도 저장
-        UpdateHealthBar();                         // 체력바 업데이트
-        impulseSource = GetComponent<CinemachineImpulseSource>();  // Impulse Source 설정
-        playerShooting = GetComponent<PlayerShooting>();           // PlayerShooting 스크립트 참조
-        rb = GetComponent<Rigidbody2D>();          // Rigidbody2D 참조
-        playerCollider = GetComponent<Collider2D>(); // Collider2D 참조
+        maxHealth = health;
+        defaultSpeed = speed;
+        UpdateHealthBar();
+        impulseSource = GetComponent<CinemachineImpulseSource>();
+        playerShooting = GetComponent<PlayerShooting>();
+        playerMovement = GetComponent<PlayerMovement>();  // PlayerMovement 스크립트 참조 추가
+        rb = GetComponent<Rigidbody2D>();
+        playerCollider = GetComponent<Collider2D>();
 
-        deathUI.SetActive(false);                  // 시작 시 사망 UI 비활성화
+        deathUI.SetActive(false);
     }
 
     void Update()
     {
-        playTime += Time.deltaTime;                // 플레이 타임 측정
+        playTime += Time.deltaTime;
 
         if (isDead && respawnTime > 0)
         {
             respawnTime -= Time.deltaTime;
-            countdownText.text = "RESPAWN : " + Mathf.Ceil(respawnTime).ToString();  // 남은 시간을 CoolTime 형식으로 표시
+            countdownText.text = "RESPAWN : " + Mathf.Ceil(respawnTime).ToString();
 
             if (respawnTime <= 0)
             {
@@ -59,7 +61,7 @@ public class Player : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        if (isDead) return; // 사망 중에는 데미지를 받지 않음
+        if (isDead) return;
 
         health -= damage;
 
@@ -83,19 +85,17 @@ public class Player : MonoBehaviour
 
     public void Heal(float amount)
     {
-        if (isDead) return; // 사망 중에는 회복 불가
+        if (isDead) return;
 
         health += amount;
-
         health = Mathf.Clamp(health, 0, maxHealth);
-
         UpdateHealthBar();
         Debug.Log("플레이어 체력 회복: " + health);
     }
 
     public void StrengthenBasicAttack()
     {
-        playerShooting.ChangeBasicBulletPrefab();  // 기본 총알 프리팹 변경
+        playerShooting.ChangeBasicBulletPrefab();
         Debug.Log("기본 공격이 강화되었습니다.");
     }
 
@@ -131,9 +131,8 @@ public class Player : MonoBehaviour
         Debug.Log("플레이어 사망");
         isDead = true;
 
-        // 사망 UI 활성화 및 카운트다운 초기화
         deathUI.SetActive(true);
-        respawnTime = 10f;  // 10초로 초기화
+        respawnTime = 10f;
 
         // 플레이어 이동 및 공격 비활성화
         DisablePlayer();
@@ -144,29 +143,30 @@ public class Player : MonoBehaviour
     {
         Debug.Log("플레이어 부활");
         isDead = false;
-        health = maxHealth;      // 체력 회복
-        UpdateHealthBar();       // 체력바 업데이트
+        health = maxHealth;
+        UpdateHealthBar();
 
-        // 플레이어 이동 및 공격 활성화
         EnablePlayer();
 
-        deathUI.SetActive(false); // 사망 UI 비활성화
+        deathUI.SetActive(false);
     }
 
     // 플레이어 비활성화
     void DisablePlayer()
     {
-        playerShooting.enabled = false;   // 플레이어 슈팅 비활성화
-        rb.velocity = Vector2.zero;       // 플레이어 이동 중지
-        rb.isKinematic = true;            // Rigidbody의 물리 반응 비활성화
-        playerCollider.enabled = false;   // 충돌 비활성화
+        playerShooting.enabled = false;
+        playerMovement.enabled = false;   // PlayerMovement 비활성화 추가
+        rb.velocity = Vector2.zero;
+        rb.isKinematic = true;
+        playerCollider.enabled = false;
     }
 
     // 플레이어 활성화
     void EnablePlayer()
     {
-        playerShooting.enabled = true;    // 플레이어 슈팅 활성화
-        rb.isKinematic = false;           // Rigidbody의 물리 반응 활성화
-        playerCollider.enabled = true;    // 충돌 활성화
+        playerShooting.enabled = true;
+        playerMovement.enabled = true;    // PlayerMovement 활성화 추가
+        rb.isKinematic = false;
+        playerCollider.enabled = true;
     }
 }

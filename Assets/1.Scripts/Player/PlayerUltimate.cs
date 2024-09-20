@@ -13,10 +13,19 @@ public class PlayerUltimate : MonoBehaviour
     public Image ultimateBar;  // 궁극기 게이지 UI (필어마운트)
     public TextMeshProUGUI ultimatePercentageText; // 궁극기 퍼센트 표시 텍스트 (TMP)
 
+    private Player player;
+
     private bool canUseUltimate = false;  // 궁극기 사용 가능 여부
+
+    private void Start()
+    {
+        player = GetComponent<Player>();
+    }
 
     void Update()
     {
+        if (player != null && player.isDead) return;
+
         // 3초마다 1% 충전
         timeSinceLastCharge += Time.deltaTime;
         if (timeSinceLastCharge >= 1.5f)
