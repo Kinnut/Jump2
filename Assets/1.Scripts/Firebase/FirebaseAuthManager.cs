@@ -1,12 +1,13 @@
+using UnityEngine;
 using Firebase.Auth;
 using Firebase.Database;
-using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System.Threading.Tasks;
-using UnityEngine.UI;
 using Firebase;
+using Photon.Pun;
 
-public class FirebaseAuthManager : MonoBehaviour
+public class FirebaseAuthManager : MonoBehaviourPunCallbacks
 {
     public TMP_InputField signUpEmailInputField;       // 회원가입 - 이메일 입력 필드
     public TMP_InputField signUpPasswordInputField;    // 회원가입 - 비밀번호 입력 필드
@@ -71,6 +72,9 @@ public class FirebaseAuthManager : MonoBehaviour
             await LoadUsernameFromDatabase(user.UserId);
             loginPanel.SetActive(false);
             Debug.Log("자동 로그인 성공: " + user.Email);
+
+            // Firebase 로그인 성공 후 Photon 서버 연결
+            ConnectToPhotonServer();
         }
     }
 
@@ -129,6 +133,9 @@ public class FirebaseAuthManager : MonoBehaviour
 
             PlayerPrefs.SetInt("AutoLogin", autoLoginToggle.isOn ? 1 : 0);
             PlayerPrefs.Save();
+
+            // Firebase 로그인 성공 후 Photon 서버 연결
+            ConnectToPhotonServer();
         }
         catch (System.Exception e)
         {
@@ -190,5 +197,27 @@ public class FirebaseAuthManager : MonoBehaviour
             auth.SignOut();
             Debug.Log("앱 종료 시 로그아웃 처리됨.");
         }
+    }
+
+    // Photon 서버 연결 함수
+    private void ConnectToPhotonServer()
+    {
+        if (!PhotonNetwork.IsConnected)
+        {
+            PhotonNetwork.ConnectUsingSettings();
+            Debug.Log("Photon 서버에 연결 시도 중...");
+        }
+    }
+
+    // Photon 서버 연결 성공 콜백
+    public override void OnConnectedToMaster()
+    {
+        Debug.Log("Photon 서버에 성공적으로 연결되었습니다.");
+    }
+
+    // Photon 서버 연결 실패 콜백
+    public override void OnDisconnected(Photon.Realtime.DisconnectCause cause)
+    {
+        Debug.LogError("Photon 서버 연결 실패: " + cause.ToString());
     }
 }

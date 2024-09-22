@@ -10,6 +10,7 @@ TagManager:
   - Green
   - Crystal
   - PlayerBullet
+  - Enemy
   layers:
   - Default
   - TransparentFX

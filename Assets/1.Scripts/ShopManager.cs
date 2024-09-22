@@ -3,6 +3,7 @@ using TMPro;
 
 public class ShopManager : MonoBehaviour
 {
+    public CrystalAttack crystalAttack;
     public CoinManager coinManager;  // 코인 매니저 참조
     public Player player;            // 플레이어 참조 (힐 및 속도 증가)
 
@@ -10,6 +11,7 @@ public class ShopManager : MonoBehaviour
     public int bulletUpgradeCost = 300;
     public int healCost = 150;
     public int speedBoostCost = 200;
+    public int crystalAttackCost = 500;
 
     // 총알 강화
     public void BuyBulletUpgrade()
@@ -35,6 +37,14 @@ public class ShopManager : MonoBehaviour
         if (coinManager.SpendCoins(speedBoostCost))
         {
             player.IncreaseSpeed(0.1f * player.speed, 30f); // 30초 동안 이동 속도 10% 증가
+        }
+    }
+
+    public void BuyCrystalAttack()
+    {
+        if (coinManager.SpendCoins(crystalAttackCost))
+        {
+            crystalAttack.ActivateCrystalAttack(30f);  // 크리스탈 30초 동안 공격
         }
     }
 }
