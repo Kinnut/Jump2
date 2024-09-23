@@ -161,6 +161,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
             {
                 // 비밀번호가 맞으면 방에 입장
                 PhotonNetwork.JoinRoom(selectedRoomName);
+                OnJoinedRoom();
             }
             else
             {
@@ -171,5 +172,10 @@ public class RoomManager : MonoBehaviourPunCallbacks
         {
             Debug.LogError("방 정보를 찾을 수 없습니다.");
         }
+    }
+
+    public override void OnJoinedRoom()
+    {
+        Debug.Log("방 입장 성공");
     }
 }
