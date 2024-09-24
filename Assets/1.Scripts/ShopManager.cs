@@ -5,7 +5,7 @@ public class ShopManager : MonoBehaviour
 {
     public CrystalAttack crystalAttack;
     public CoinManager coinManager;  // 코인 매니저 참조
-    public Player player;            // 플레이어 참조 (힐 및 속도 증가)
+    public MyPlayer player;            // 플레이어 참조 (힐 및 속도 증가)
 
     // 아이템 가격
     public int bulletUpgradeCost = 300;

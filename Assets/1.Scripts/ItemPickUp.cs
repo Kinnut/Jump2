@@ -35,7 +35,7 @@ public class ItemPickup : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Player player = collision.GetComponent<Player>();
+        MyPlayer player = collision.GetComponent<MyPlayer>();
 
         if (player != null && item != null)
         {

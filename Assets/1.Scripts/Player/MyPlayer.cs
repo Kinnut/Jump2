@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Player : MonoBehaviour
+public class MyPlayer : MonoBehaviour
 {
     // 기존 변수들
     public float health = 100f;

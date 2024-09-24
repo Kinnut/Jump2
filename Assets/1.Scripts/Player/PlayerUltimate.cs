@@ -13,13 +13,13 @@ public class PlayerUltimate : MonoBehaviour
     public Image ultimateBar;  // 궁극기 게이지 UI (필어마운트)
     public TextMeshProUGUI ultimatePercentageText; // 궁극기 퍼센트 표시 텍스트 (TMP)
 
-    private Player player;
+    private MyPlayer player;
 
     private bool canUseUltimate = false;  // 궁극기 사용 가능 여부
 
     private void Start()
     {
-        player = GetComponent<Player>();
+        player = GetComponent<MyPlayer>();
     }
 
     void Update()

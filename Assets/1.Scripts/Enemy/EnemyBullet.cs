@@ -37,7 +37,7 @@ public class EnemyBullet : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D hitInfo)
     {
-        Player player = hitInfo.GetComponent<Player>(); // 플레이어에 맞으면
+        MyPlayer player = hitInfo.GetComponent<MyPlayer>(); // 플레이어에 맞으면
         if (player != null)
         {
             player.TakeDamage(damage); // 플레이어에게 데미지를 줌

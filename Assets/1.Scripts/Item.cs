@@ -10,7 +10,7 @@ public class Item
         itemName = name;
     }
 
-    public virtual void ApplyEffect(Player player)
+    public virtual void ApplyEffect(MyPlayer player)
     {
         Debug.Log("아이템 효과 적용: " + itemName);
     }
@@ -25,7 +25,7 @@ public class HealItem : Item
         this.healAmount = healAmount;
     }
 
-    public override void ApplyEffect(Player player)
+    public override void ApplyEffect(MyPlayer player)
     {
         player.Heal(healAmount);
         Debug.Log("체력 회복: " + healAmount);
@@ -36,7 +36,7 @@ public class AmmoItem : Item
 {
     public AmmoItem() : base("Ammo") { }
 
-    public override void ApplyEffect(Player player)
+    public override void ApplyEffect(MyPlayer player)
     {
         player.StrengthenBasicAttack();
         Debug.Log("총알 강화");
@@ -54,7 +54,7 @@ public class BoostItem : Item
         this.duration = duration;
     }
 
-    public override void ApplyEffect(Player player)
+    public override void ApplyEffect(MyPlayer player)
     {
         player.IncreaseSpeed(speedIncrease, duration);
         Debug.Log("속도 증가: " + speedIncrease + " for " + duration + " seconds");
@@ -70,7 +70,7 @@ public class QuestionItem : Item
         possibleItems = items;
     }
 
-    public override void ApplyEffect(Player player)
+    public override void ApplyEffect(MyPlayer player)
     {
         int randomIndex = Random.Range(0, possibleItems.Count);
         possibleItems[randomIndex].ApplyEffect(player);

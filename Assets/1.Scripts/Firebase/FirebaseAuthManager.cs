@@ -165,6 +165,10 @@ public class FirebaseAuthManager : MonoBehaviourPunCallbacks
                     {
                         userIDText.text = "아이디: " + username;
                     }
+
+                    // Photon에 닉네임 설정
+                    PhotonNetwork.NickName = username;
+                    Debug.Log("Photon 닉네임 설정: " + username);
                 }
                 else
                 {
@@ -177,6 +181,7 @@ public class FirebaseAuthManager : MonoBehaviourPunCallbacks
             }
         }
     }
+
 
     public void Logout()
     {
