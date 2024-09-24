@@ -5,6 +5,7 @@ using Photon.Realtime;  // Photon의 Room 관련 기능 사용
 using UnityEngine.UI;  // ScrollView 및 Toggle 사용
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 public class RoomManager : MonoBehaviourPunCallbacks
 {
@@ -16,6 +17,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public GameObject passwordPanel;           // 비밀번호 입력 패널
     public TMP_InputField passwordConfirmInputField;  // 비밀번호 확인 필드
     public Button passwordConfirmButton;       // 비밀번호 확인 버튼
+    public GameObject roomUIPanel; // 방 UI를 관리할 Panel
 
     private const int maxPlayers = 3;          // 방의 최대 플레이어 수
     private const int passwordLength = 4;      // 비밀번호 최대 길이
@@ -76,15 +78,17 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
         // Photon의 RoomOptions 설정
         RoomOptions roomOptions = new RoomOptions();
-        roomOptions.MaxPlayers = (byte)maxPlayers;
+        roomOptions.MaxPlayers = maxPlayers;
         roomOptions.IsVisible = true;  // 방을 목록에 표시 (공개/비공개 상관없이)
         roomOptions.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable();
         roomOptions.CustomRoomProperties.Add("password", isPrivate ? password : "");  // 비밀번호 저장
         roomOptions.CustomRoomPropertiesForLobby = new string[] { "password" };  // 로비에서 비밀번호 정보 노출
+        roomOptions.EmptyRoomTtl = 0;  // 방이 비어 있으면 즉시 삭제
 
         // 방 생성
         PhotonNetwork.CreateRoom(roomName, roomOptions);
     }
+
 
     // 방 생성 성공 시 호출되는 콜백
     public override void OnCreatedRoom()
@@ -139,7 +143,6 @@ public class RoomManager : MonoBehaviourPunCallbacks
         }
     }
 
-
     // 비공개 방 클릭 시 호출되는 함수 (비밀번호 입력창 표시)
     public void OnPrivateRoomClicked(string roomName)
     {
@@ -161,7 +164,6 @@ public class RoomManager : MonoBehaviourPunCallbacks
             {
                 // 비밀번호가 맞으면 방에 입장
                 PhotonNetwork.JoinRoom(selectedRoomName);
-                OnJoinedRoom();
             }
             else
             {
@@ -176,6 +178,25 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        Debug.Log("방 입장 성공");
+        Debug.Log("방에 성공적으로 입장했습니다: " + PhotonNetwork.CurrentRoom.Name);
+
+        // 방에 입장하면 Room UI 패널을 활성화
+        roomUIPanel.SetActive(true);
+
+        // 방 이름을 UI에 표시 (RoomUIManager가 관리하는 UI에 방 이름 전달)
+        RoomUIManager roomUI = roomUIPanel.GetComponent<RoomUIManager>();
+        roomUI.InitializeRoomUI(PhotonNetwork.CurrentRoom.Name);
+    }
+
+    public override void OnLeftRoom()
+    {
+        // 방을 떠나면 로비로 돌아감
+        roomUIPanel.SetActive(false);
+    }
+
+    // 방 나가기 버튼 클릭 시 호출
+    public void OnLeaveRoomButtonClicked()
+    {
+        PhotonNetwork.LeaveRoom();
     }
 }

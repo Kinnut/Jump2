@@ -26,6 +26,8 @@ public class FirebaseAuthManager : MonoBehaviourPunCallbacks
     private FirebaseAuth auth;
     private DatabaseReference databaseRef;
 
+    public TextMeshProUGUI networkState;
+
     void Start()
     {
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task => {
@@ -45,6 +47,11 @@ public class FirebaseAuthManager : MonoBehaviourPunCallbacks
 
         autoLoginToggle.isOn = PlayerPrefs.GetInt("AutoLogin", 0) == 1;
         autoLoginToggle.onValueChanged.AddListener(delegate { OnToggleChanged(); });
+    }
+
+    private void Update()
+    {
+        networkState.text = PhotonNetwork.NetworkClientState.ToString();
     }
 
     private async void CheckLoginStatus()
