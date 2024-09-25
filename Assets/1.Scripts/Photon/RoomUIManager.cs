@@ -1,8 +1,9 @@
 using UnityEngine;
-using TMPro;  // TextMeshPro 사용
-using Photon.Pun;  // Photon 사용
-using Photon.Realtime;  // Photon의 Room 관련 기능 사용
-using System.Collections.Generic;  // List 사용
+using TMPro;
+using Photon.Pun;
+using Photon.Realtime;
+using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class RoomUIManager : MonoBehaviourPunCallbacks
 {
@@ -11,13 +12,48 @@ public class RoomUIManager : MonoBehaviourPunCallbacks
     public TMP_Text[] playerNameTexts;      // 각 카드에 들어가는 플레이어 닉네임 텍스트
     public GameObject[] cardFrontPanels;    // 각 카드의 앞부분을 가리는 패널 (새 유저가 들어오기 전 가려지는 패널)
 
-    void Start()
+    public Button[] ultimateButtons;        // 1차원 배열로 궁극기 버튼들 (총 플레이어 수 * 각 플레이어의 궁극기 수)
+    public Button[] selectionButtons;       // 각 유저의 궁극기 선택 버튼 (하얀 테두리)
+
+    public Image[] ultimateSelectionImages; // 각 플레이어 중앙의 궁극기 이미지 (중앙에 표시될 이미지)
+    public Sprite iceSprite, fireSprite, healSprite; // 궁극기 스프라이트 (얼음, 불, 치유)
+
+    private Dictionary<int, int> selectedUltimates = new Dictionary<int, int>(); // 플레이어별 선택된 궁극기 정보
+    private HashSet<int> globallySelectedUltimates = new HashSet<int>(); // 전역적으로 선택된 궁극기 인덱스 저장
+
+    private const int ultimatesPerPlayer = 3;  // 플레이어마다 3개의 궁극기 버튼이 있다고 가정
+
+    private void Start()
     {
         // 방 이름 설정
         roomNameText.text = PhotonNetwork.CurrentRoom.Name;
 
         // 플레이어 목록 업데이트
         UpdatePlayerList();
+
+        // 궁극기 선택 버튼 초기화
+        for (int i = 0; i < ultimateButtons.Length; i++)
+        {
+            int buttonIndex = i;
+            ultimateButtons[i].onClick.RemoveAllListeners(); // 이전 리스너 삭제
+            ultimateButtons[i].onClick.AddListener(() => OnUltimateSelected(buttonIndex));
+        }
+
+        // 자신의 궁극기 선택 버튼만 활성화
+        for (int i = 0; i < selectionButtons.Length; i++)
+        {
+            int playerIndex = i;
+
+            // 자신의 버튼만 활성화
+            if (PhotonNetwork.LocalPlayer.ActorNumber - 1 == playerIndex)
+            {
+                selectionButtons[i].interactable = true;  // 자신의 버튼 활성화
+            }
+            else
+            {
+                selectionButtons[i].interactable = false; // 다른 유저의 버튼 비활성화
+            }
+        }
     }
 
     public void InitializeRoomUI(string roomName)
@@ -43,10 +79,124 @@ public class RoomUIManager : MonoBehaviourPunCallbacks
         // 현재 방에 있는 모든 플레이어 목록을 가져옴
         List<Player> players = new List<Player>(PhotonNetwork.CurrentRoom.Players.Values);
 
+        // ActorNumber 순서로 정렬된 플레이어 목록을 가져옴
+        players.Sort((x, y) => x.ActorNumber.CompareTo(y.ActorNumber));
+
+        // 각 플레이어를 올바른 슬롯에 배치
         for (int i = 0; i < players.Count; i++)
         {
             playerNameTexts[i].text = players[i].NickName;  // 해당 슬롯에 플레이어 닉네임 설정
             cardFrontPanels[i].SetActive(false);  // 패널을 비활성화하여 정보가 보이도록 설정
+        }
+    }
+
+    // 궁극기 선택 시 호출되는 함수
+    public void OnUltimateSelected(int buttonIndex)
+    {
+        Debug.Log("궁 선택 눌럿음");
+
+        int playerIndex = buttonIndex / ultimatesPerPlayer;  // 플레이어 인덱스 계산
+        int ultimateIndex = buttonIndex % ultimatesPerPlayer;  // 해당 플레이어가 선택한 궁극기 인덱스
+
+        // 자신이 속한 슬롯에서만 궁극기 선택 가능
+        if (PhotonNetwork.LocalPlayer.ActorNumber - 1 != playerIndex) return;
+
+        // 이미 다른 유저가 해당 궁극기를 선택했으면 선택 불가
+        if (globallySelectedUltimates.Contains(ultimateIndex))
+        {
+            Debug.Log($"Ultimate {ultimateIndex} is already selected by another player.");
+            return;
+        }
+
+        // 이미 다른 궁극기를 선택한 경우 해제 후 새로운 궁극기 선택
+        if (selectedUltimates.ContainsKey(playerIndex))
+        {
+            int previousUltimate = selectedUltimates[playerIndex];
+            photonView.RPC("DeselectUltimate", RpcTarget.AllBuffered, playerIndex, previousUltimate);
+        }
+
+        // 새로운 궁극기 선택
+        photonView.RPC("SelectUltimate", RpcTarget.AllBuffered, playerIndex, ultimateIndex);
+    }
+
+    [PunRPC]
+    public void SelectUltimate(int playerIndex, int ultimateIndex)
+    {
+        // 중복 선택 방지 (로컬 상태 확인 후 처리)
+        if (selectedUltimates.ContainsKey(playerIndex) && selectedUltimates[playerIndex] == ultimateIndex)
+        {
+            Debug.Log($"Player {playerIndex} already selected this ultimate: {ultimateIndex}");
+            return;
+        }
+
+        Debug.Log($"Player {playerIndex} selects ultimate {ultimateIndex}");
+
+        // 궁극기 선택 상태 저장
+        selectedUltimates[playerIndex] = ultimateIndex;
+        globallySelectedUltimates.Add(ultimateIndex); // 전역 선택에 추가
+
+        // 궁극기 선택에 따라 중앙 이미지를 변경
+        switch (ultimateIndex)
+        {
+            case 0:
+                ultimateSelectionImages[playerIndex].sprite = iceSprite;   // 얼음
+                Debug.Log("Ice sprite selected");
+                break;
+            case 1:
+                ultimateSelectionImages[playerIndex].sprite = fireSprite;  // 불
+                Debug.Log("Fire sprite selected");
+                break;
+            case 2:
+                ultimateSelectionImages[playerIndex].sprite = healSprite;  // 치유
+                Debug.Log("Heal sprite selected");
+                break;
+        }
+
+        // UI 상태 갱신
+        UpdateUltimateUI();
+    }
+
+    [PunRPC]
+    public void DeselectUltimate(int playerIndex, int ultimateIndex)
+    {
+        // 궁극기 선택 해제
+        selectedUltimates.Remove(playerIndex);
+        globallySelectedUltimates.Remove(ultimateIndex); // 전역 선택에서 제거
+
+        Debug.Log($"Player {playerIndex} deselects ultimate {ultimateIndex}");
+
+        // 선택된 궁극기 이미지 초기화
+        ultimateSelectionImages[playerIndex].sprite = null;
+
+        // UI 상태 갱신
+        UpdateUltimateUI();
+    }
+
+    // 궁극기 선택 UI 업데이트
+    private void UpdateUltimateUI()
+    {
+        // 각 플레이어의 궁극기 선택 상태에 따라 UI 업데이트
+        foreach (var selected in selectedUltimates)
+        {
+            int playerIndex = selected.Key;
+            int ultimateIndex = selected.Value;
+
+            // 해당 플레이어의 궁극기 버튼을 선택된 상태로 표시
+            for (int i = 0; i < ultimatesPerPlayer; i++)
+            {
+                int buttonIndex = playerIndex * ultimatesPerPlayer + i;
+                ultimateButtons[buttonIndex].interactable = (i != ultimateIndex);
+            }
+        }
+
+        // 전역적으로 선택된 궁극기 처리
+        for (int i = 0; i < PhotonNetwork.CurrentRoom.PlayerCount * ultimatesPerPlayer; i++)
+        {
+            int ultimateIndex = i % ultimatesPerPlayer;
+            if (globallySelectedUltimates.Contains(ultimateIndex))
+            {
+                ultimateButtons[i].interactable = false;
+            }
         }
     }
 
@@ -55,12 +205,22 @@ public class RoomUIManager : MonoBehaviourPunCallbacks
     {
         Debug.Log(newPlayer.NickName + "이(가) 방에 입장했습니다.");
         UpdatePlayerList();  // 플레이어 목록 갱신
+        UpdateUltimateUI();   // 플레이어가 입장하면 궁극기 상태 갱신
     }
 
     // 플레이어가 방을 나갔을 때 호출되는 콜백
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         Debug.Log(otherPlayer.NickName + "이(가) 방을 떠났습니다.");
+
+        // 플레이어가 선택한 궁극기를 해제
+        if (selectedUltimates.ContainsKey(otherPlayer.ActorNumber - 1))
+        {
+            int ultimateIndex = selectedUltimates[otherPlayer.ActorNumber - 1];
+            photonView.RPC("DeselectUltimate", RpcTarget.AllBuffered, otherPlayer.ActorNumber - 1, ultimateIndex);
+        }
+
         UpdatePlayerList();  // 플레이어 목록 갱신
+        UpdateUltimateUI();   // 플레이어가 나가면 궁극기 상태 갱신
     }
 }
