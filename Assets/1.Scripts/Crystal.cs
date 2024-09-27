@@ -1,26 +1,25 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using Unity.VisualScripting;
-using UnityEngine.Experimental.GlobalIllumination;
-using System;
+using Photon.Pun;
+using System.Collections.Generic;
 
 public class Crystal : MonoBehaviour
 {
     public float maxHealth = 1000f;         // 크리스탈의 최대 체력
-    private float currentHealth;           // 크리스탈의 현재 체력
-    public Image healthBar;                // 체력 fillamount 이미지
-    public TextMeshProUGUI healthPercent;  // 체력 %
+    private float currentHealth;            // 크리스탈의 현재 체력
+    public Image healthBar;                 // 체력 fillamount 이미지
+    public TextMeshProUGUI healthPercent;   // 체력 %
 
-    public float interactionRange = 3f;               // 상호작용 가능한 거리
-    public GameObject shopUI;                         // 상점 UI
-    public TextMeshProUGUI interactionText;           // 상호작용 텍스트 UI
-    private Transform player;                         // 플레이어 위치 참조
-    private bool isPlayerInRange = false;             // 플레이어가 상호작용 범위에 있는지 여부
+    public float interactionRange = 3f;     // 상호작용 가능한 거리
+    public GameObject shopUI;               // 상점 UI
+    public TextMeshProUGUI interactionText; // 상호작용 텍스트 UI
+    private bool isPlayerInRange = false;   // 플레이어가 상호작용 범위에 있는지 여부
+
+    private List<Transform> playersInRange = new List<Transform>(); // 상호작용 범위 내의 플레이어들
 
     void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player").transform;
         currentHealth = maxHealth;         // 시작 시 체력을 최대 값으로 설정
         UpdateTextUI();
         UpdateHealthUI();                  // 체력 UI 업데이트
@@ -28,7 +27,7 @@ public class Crystal : MonoBehaviour
 
     private void Update()
     {
-        OpenShopDistance();
+        CheckPlayersInRange();
     }
 
     // 크리스탈이 데미지를 받을 때 호출되는 메서드
@@ -54,30 +53,40 @@ public class Crystal : MonoBehaviour
         healthPercent.text = $"크리스탈 체력 : {currentHealth}%";
     }
 
-    void OpenShopDistance()
+    // 범위 내 플레이어를 확인하고 상점 UI를 띄우는 함수
+    void CheckPlayersInRange()
     {
-        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
-
-        // 플레이어가 상호작용 범위 안에 들어오면
-        if (distanceToPlayer <= interactionRange)
+        // 현재 게임 내 모든 플레이어를 추적
+        foreach (Photon.Realtime.Player player in PhotonNetwork.PlayerList)
         {
-            if (!isPlayerInRange)
+            // 각 플레이어의 위치를 가져와 크리스탈과의 거리를 계산
+            GameObject playerObj = PhotonView.Find(player.ActorNumber)?.gameObject;
+            if (playerObj != null)
             {
-                interactionText.gameObject.SetActive(true); // 상호작용 텍스트 표시
-                isPlayerInRange = true;
-            }
+                float distanceToPlayer = Vector2.Distance(transform.position, playerObj.transform.position);
 
-            // F키를 눌렀을 때 상점 UI 활성화
-            if (Input.GetKeyDown(KeyCode.F))
-            {
-                OpenShop();
+                // 플레이어가 상호작용 범위 안에 들어온 경우
+                if (distanceToPlayer <= interactionRange)
+                {
+                    if (!isPlayerInRange)
+                    {
+                        interactionText.gameObject.SetActive(true); // 상호작용 텍스트 표시
+                        isPlayerInRange = true;
+                    }
+
+                    // F키를 눌렀을 때 상점 UI 활성화
+                    if (Input.GetKeyDown(KeyCode.F) && playerObj.GetComponent<PhotonView>().IsMine)
+                    {
+                        OpenShop();
+                    }
+                }
+                else
+                {
+                    // 상호작용 범위를 벗어나면 텍스트 숨기기
+                    interactionText.gameObject.SetActive(false);
+                    isPlayerInRange = false;
+                }
             }
-        }
-        else if (isPlayerInRange)
-        {
-            // 상호작용 범위를 벗어나면 텍스트 숨기기
-            interactionText.gameObject.SetActive(false);
-            isPlayerInRange = false;
         }
     }
 

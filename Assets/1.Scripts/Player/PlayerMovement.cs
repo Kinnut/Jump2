@@ -1,69 +1,69 @@
+using Cinemachine;
 using UnityEngine;
-using UnityEngine.UI;
+using Photon.Pun;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviourPun
 {
-    public float moveSpeed = 5f;          // 기본 이동 속도
-    public float dashSpeed = 15f;         // 대시 속도
-    public float dashDuration = 0.2f;     // 대시 지속 시간
-    public float dashCooldown = 2f;       // 대시 쿨타임
+    public float moveSpeed = 5f;
+    public float dashSpeed = 15f;
+    public float dashDuration = 0.2f;
+    public float dashCooldown = 2f;
 
     private Rigidbody2D rb;
     private Vector2 movement;
     private Vector2 mousePos;
 
-    public Camera cam;
-    private bool isDashing = false;       // 대시 중인지 여부
-    private float dashTime;               // 대시 남은 시간
-    private float nextDashTime = 0f;      // 다음 대시 가능 시간
-
-    public Image dashCooldownImage;       // 대시 쿨타임 UI 이미지
+    private CinemachineVirtualCamera virtualCam;  // 시네머신 가상 카메라 참조
+    private bool isDashing = false;
+    private float dashTime;
+    private float nextDashTime = 0f;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        dashCooldownImage.gameObject.SetActive(false);
+
+        // 로컬 플레이어의 경우에만 카메라를 설정
+        if (photonView.IsMine)
+        {
+            // 씬에 있는 CinemachineVirtualCamera를 찾음
+            virtualCam = FindObjectOfType<CinemachineVirtualCamera>();
+
+            if (virtualCam != null)
+            {
+                // 가상 카메라의 Follow를 현재 플레이어로 설정
+                virtualCam.Follow = transform;
+            }
+        }
     }
 
     void Update()
     {
-        // 이동 입력
+        if (!photonView.IsMine) return;  // 로컬 플레이어가 아니면 입력 무시
+
+        // 이동 입력 처리
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
 
-        mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
+        // 마우스 위치를 업데이트
+        mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         // 대시 입력 처리 (Shift 키)
         if (Input.GetKeyDown(KeyCode.LeftShift) && Time.time >= nextDashTime)
         {
-            dashCooldownImage.gameObject.SetActive(true);
             StartDash();
-        }
-
-        // 쿨타임 UI 업데이트
-        if (dashCooldownImage != null)
-        {
-            if (Time.time >= nextDashTime)
-            {
-                dashCooldownImage.fillAmount = 1f;  // 쿨타임 완료 시 UI 가득참
-                dashCooldownImage.gameObject.SetActive(false);
-            }
-            else
-            {
-                dashCooldownImage.fillAmount = (nextDashTime - Time.time) / dashCooldown;  // 쿨타임 진행중
-            }
         }
     }
 
     void FixedUpdate()
     {
+        if (!photonView.IsMine) return;  // 로컬 플레이어가 아니면 조작 불가
+
         if (isDashing)
         {
             // 대시 중 이동
             rb.MovePosition(rb.position + movement * dashSpeed * Time.fixedDeltaTime);
-
-            // 대시 시간 종료
             dashTime -= Time.fixedDeltaTime;
+
             if (dashTime <= 0)
             {
                 isDashing = false;
@@ -71,7 +71,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            // 일반 이동
+            // 일반 이동 처리
             rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
         }
 
@@ -81,11 +81,11 @@ public class PlayerMovement : MonoBehaviour
         rb.rotation = angle;
     }
 
-    // 대시 시작
+    // 대시 처리
     void StartDash()
     {
         isDashing = true;
         dashTime = dashDuration;
-        nextDashTime = Time.time + dashCooldown;  // 쿨타임 설정
+        nextDashTime = Time.time + dashCooldown;
     }
 }

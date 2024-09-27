@@ -8828,6 +8828,7 @@ MonoBehaviour:
   - {fileID: 1416775030}
   - {fileID: 2072318018}
   - {fileID: 2090537310}
+  startGameButton: {fileID: 1423023331}
   ultimateSelectionImages:
   - {fileID: 967442857}
   - {fileID: 922482703}
@@ -11404,7 +11405,7 @@ MonoBehaviour:
   m_UpdateMethod: 2
   m_BlendUpdateMethod: 1
   m_DefaultBlend:
-    m_Style: 1
+    m_Style: 0
     m_Time: 2
     m_CustomCurve:
       serializedVersion: 2
@@ -16108,6 +16109,7 @@ GameObject:
   - component: {fileID: 1085062267}
   - component: {fileID: 1085062271}
   - component: {fileID: 1085062270}
+  - component: {fileID: 1085062272}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -16172,6 +16174,27 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1085062266}
   m_CullTransparentMesh: 1
+--- !u!95 &1085062272
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1085062266}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2bfe4266254078d448ae05377ba12ba9, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1116632572
 GameObject:
   m_ObjectHideFlags: 0
@@ -17891,6 +17914,7 @@ GameObject:
   - component: {fileID: 1262181742}
   - component: {fileID: 1262181746}
   - component: {fileID: 1262181745}
+  - component: {fileID: 1262181747}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -17955,6 +17979,27 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1262181741}
   m_CullTransparentMesh: 1
+--- !u!95 &1262181747
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1262181741}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2bfe4266254078d448ae05377ba12ba9, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1278085291
 GameObject:
   m_ObjectHideFlags: 0
@@ -19484,6 +19529,7 @@ GameObject:
   - component: {fileID: 1387492798}
   - component: {fileID: 1387492802}
   - component: {fileID: 1387492801}
+  - component: {fileID: 1387492803}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -19548,6 +19594,27 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1387492797}
   m_CullTransparentMesh: 1
+--- !u!95 &1387492803
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1387492797}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2bfe4266254078d448ae05377ba12ba9, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1394970461
 GameObject:
   m_ObjectHideFlags: 0
@@ -20279,7 +20346,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1423023329}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2097431030}
+        m_TargetAssemblyTypeName: RoomManager, Assembly-CSharp
+        m_MethodName: ToGameScene
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1460190909
 GameObject:
   m_ObjectHideFlags: 0

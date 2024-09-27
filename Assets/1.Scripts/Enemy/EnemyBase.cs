@@ -56,7 +56,6 @@ public abstract class EnemyBase : MonoBehaviour
         if (lastHitByPlayer)
         {
             playerUltimate.OnKillEnemy();
-            scoreManager.AddKillScore();
 
             // ÄÚÀÎ È¹µæ ·ÎÁ÷ Ãß°¡
             if (coinManager != null)

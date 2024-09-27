@@ -89,7 +89,6 @@ public class RoomManager : MonoBehaviourPunCallbacks
         PhotonNetwork.CreateRoom(roomName, roomOptions);
     }
 
-
     // 방 생성 성공 시 호출되는 콜백
     public override void OnCreatedRoom()
     {
@@ -191,6 +190,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public override void OnLeftRoom()
     {
         // 방을 떠나면 로비로 돌아감
+        OnLeaveRoomButtonClicked();
         roomUIPanel.SetActive(false);
     }
 

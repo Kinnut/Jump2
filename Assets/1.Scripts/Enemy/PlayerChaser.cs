@@ -1,4 +1,6 @@
 using UnityEngine;
+using Photon.Pun;
+using System.Linq;
 
 public class PlayerChaser : EnemyBase
 {
@@ -8,39 +10,46 @@ public class PlayerChaser : EnemyBase
     public GameObject bulletPrefab; // 발사할 총알 프리팹
     public Transform firePoint; // 총알이 발사될 위치
 
-    private Transform player;
+    private Transform targetPlayer; // 추적할 플레이어
     private float nextAttackTime = 0f;
 
     protected override void Start()
     {
         base.Start();
-        player = GameObject.FindGameObjectWithTag("Player").transform;
+        FindClosestPlayer(); // 가장 가까운 플레이어 찾기
     }
 
     protected override void Update()
     {
-        Move();
-        TryAttackPlayer();
+        if (targetPlayer == null)
+        {
+            FindClosestPlayer(); // 추적 중인 플레이어가 없으면 다시 찾기
+        }
+        else
+        {
+            Move();
+            TryAttackPlayer();
+        }
     }
 
     protected override void Move()
     {
-        if (player != null)
+        if (targetPlayer != null)
         {
-            float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+            float distanceToPlayer = Vector2.Distance(transform.position, targetPlayer.position);
             if (distanceToPlayer > attackRange)
             {
-                Vector2 direction = (player.position - transform.position).normalized;
-                transform.position = Vector2.MoveTowards(transform.position, player.position, moveSpeed * Time.deltaTime);
+                Vector2 direction = (targetPlayer.position - transform.position).normalized;
+                transform.position = Vector2.MoveTowards(transform.position, targetPlayer.position, moveSpeed * Time.deltaTime);
             }
         }
     }
 
     private void TryAttackPlayer()
     {
-        if (player != null && Time.time >= nextAttackTime)
+        if (targetPlayer != null && Time.time >= nextAttackTime)
         {
-            float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+            float distanceToPlayer = Vector2.Distance(transform.position, targetPlayer.position);
             if (distanceToPlayer <= attackRange)
             {
                 ShootAtPlayer();
@@ -58,10 +67,29 @@ public class PlayerChaser : EnemyBase
 
             if (bulletScript != null)
             {
-                Vector2 direction = (player.position - firePoint.position).normalized; // 플레이어 쪽으로 방향 계산
+                Vector2 direction = (targetPlayer.position - firePoint.position).normalized; // 플레이어 쪽으로 방향 계산
                 bulletScript.SetDirection(direction); // 방향을 총알에 설정
                 bulletScript.SetDamage(attackDamage); // 총알에 데미지 설정
             }
         }
+    }
+
+    // 가장 가까운 플레이어 찾기
+    private void FindClosestPlayer()
+    {
+        // 네트워크 상에서 모든 플레이어를 가져옴
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+
+        if (players.Length == 0)
+        {
+            targetPlayer = null; // 플레이어가 없으면 null로 설정
+            return;
+        }
+
+        // 가장 가까운 플레이어를 찾음
+        targetPlayer = players
+            .Select(p => p.transform)
+            .OrderBy(t => Vector2.Distance(transform.position, t.position)) // 거리에 따라 정렬
+            .FirstOrDefault();
     }
 }

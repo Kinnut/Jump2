@@ -1,9 +1,10 @@
 using Cinemachine;
+using Photon.Pun;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MyPlayer : MonoBehaviour
+public class MyPlayer : MonoBehaviourPun
 {
     // 기존 변수들
     public float health = 100f;
@@ -17,7 +18,6 @@ public class MyPlayer : MonoBehaviour
 
     private PlayerShooting playerShooting;
     private PlayerMovement playerMovement;  // PlayerMovement 스크립트 참조
-    public ScoreManager scoreManager;
 
     private float playTime = 0f;
 
@@ -29,24 +29,64 @@ public class MyPlayer : MonoBehaviour
     private Rigidbody2D rb;
     private Collider2D playerCollider;
 
+    private Canvas playerCanvas;  // 플레이어에 종속된 캔버스
+    private Camera mainCamera;    // 메인 카메라 참조
+
     void Start()
     {
+        // 플레이어의 자식 오브젝트로 포함된 Canvas를 찾음
+        playerCanvas = GetComponentInChildren<Canvas>();
+
+        // 이 스크립트가 로컬 플레이어의 것인지 확인하고, 로컬 플레이어의 캔버스만 활성화
+        if (photonView.IsMine)
+        {
+            // 로컬 플레이어의 메인 카메라 찾기
+            mainCamera = Camera.main;
+
+            // 자신의 캔버스만 활성화
+            playerCanvas.enabled = true;
+
+            // 캔버스 회전을 고정하려면, 메인 카메라에 캔버스를 고정하는 것도 가능
+            playerCanvas.transform.SetParent(mainCamera.transform, false);
+            playerCanvas.transform.localPosition = new Vector3(0, 0, 2);  // 적절한 위치 설정
+        }
+        else
+        {
+            // 다른 플레이어들의 캔버스 비활성화
+            playerCanvas.enabled = false;
+        }
+
         maxHealth = health;
         defaultSpeed = speed;
         UpdateHealthBar();
+
         impulseSource = GetComponent<CinemachineImpulseSource>();
         playerShooting = GetComponent<PlayerShooting>();
-        playerMovement = GetComponent<PlayerMovement>();  // PlayerMovement 스크립트 참조 추가
+        playerMovement = GetComponent<PlayerMovement>();
         rb = GetComponent<Rigidbody2D>();
         playerCollider = GetComponent<Collider2D>();
 
+        // 사망 UI 비활성화
         deathUI.SetActive(false);
+    }
+
+    void LateUpdate()
+    {
+        if (photonView.IsMine)
+        {
+            // UI 캔버스의 회전을 고정시키기 (캔버스가 플레이어와 함께 회전하지 않게 함)
+            if (playerCanvas != null)
+            {
+                playerCanvas.transform.rotation = Quaternion.identity;  // 회전을 고정
+            }
+        }
     }
 
     void Update()
     {
         playTime += Time.deltaTime;
 
+        // 사망 상태 확인 및 부활 처리
         if (isDead && respawnTime > 0)
         {
             respawnTime -= Time.deltaTime;
@@ -59,6 +99,7 @@ public class MyPlayer : MonoBehaviour
         }
     }
 
+    // 데미지를 받는 메서드
     public void TakeDamage(float damage)
     {
         if (isDead) return;
@@ -83,6 +124,7 @@ public class MyPlayer : MonoBehaviour
         }
     }
 
+    // 체력 회복 메서드
     public void Heal(float amount)
     {
         if (isDead) return;
@@ -93,12 +135,14 @@ public class MyPlayer : MonoBehaviour
         Debug.Log("플레이어 체력 회복: " + health);
     }
 
+    // 기본 공격 강화 메서드
     public void StrengthenBasicAttack()
     {
         playerShooting.ChangeBasicBulletPrefab();
         Debug.Log("기본 공격이 강화되었습니다.");
     }
 
+    // 속도 증가 메서드
     public void IncreaseSpeed(float amount, float duration)
     {
         if (!isBoosted)
@@ -110,6 +154,7 @@ public class MyPlayer : MonoBehaviour
         }
     }
 
+    // 속도 복원 메서드
     private void ResetSpeed()
     {
         speed = defaultSpeed;
@@ -117,6 +162,7 @@ public class MyPlayer : MonoBehaviour
         Debug.Log("속도 원상복구");
     }
 
+    // 체력 바 업데이트 메서드
     void UpdateHealthBar()
     {
         if (healthBarImage != null)
@@ -151,21 +197,21 @@ public class MyPlayer : MonoBehaviour
         deathUI.SetActive(false);
     }
 
-    // 플레이어 비활성화
+    // 플레이어 비활성화 메서드
     void DisablePlayer()
     {
         playerShooting.enabled = false;
-        playerMovement.enabled = false;   // PlayerMovement 비활성화 추가
+        playerMovement.enabled = false;
         rb.velocity = Vector2.zero;
         rb.isKinematic = true;
         playerCollider.enabled = false;
     }
 
-    // 플레이어 활성화
+    // 플레이어 활성화 메서드
     void EnablePlayer()
     {
         playerShooting.enabled = true;
-        playerMovement.enabled = true;    // PlayerMovement 활성화 추가
+        playerMovement.enabled = true;
         rb.isKinematic = false;
         playerCollider.enabled = true;
     }

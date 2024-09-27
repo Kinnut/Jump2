@@ -14,6 +14,7 @@ public class RoomUIManager : MonoBehaviourPunCallbacks
 
     public Button[] ultimateButtons;        // 1차원 배열로 궁극기 버튼들 (총 플레이어 수 * 각 플레이어의 궁극기 수)
     public Button[] selectionButtons;       // 각 유저의 궁극기 선택 버튼 (하얀 테두리)
+    public Button startGameButton;          // 게임 시작 버튼 (방장만 누를 수 있음)
 
     public Image[] ultimateSelectionImages; // 각 플레이어 중앙의 궁극기 이미지 (중앙에 표시될 이미지)
     public Sprite iceSprite, fireSprite, healSprite; // 궁극기 스프라이트 (얼음, 불, 치유)
@@ -25,6 +26,8 @@ public class RoomUIManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        PhotonNetwork.AutomaticallySyncScene = true;
+
         // 방 이름 설정
         roomNameText.text = PhotonNetwork.CurrentRoom.Name;
 
@@ -53,6 +56,17 @@ public class RoomUIManager : MonoBehaviourPunCallbacks
             {
                 selectionButtons[i].interactable = false; // 다른 유저의 버튼 비활성화
             }
+        }
+
+        // 방장 여부에 따라 게임 시작 버튼 활성화
+        if (PhotonNetwork.IsMasterClient)
+        {
+            startGameButton.interactable = true;
+            startGameButton.onClick.AddListener(StartGame);  // 방장이 게임 시작 버튼을 누를 수 있음
+        }
+        else
+        {
+            startGameButton.interactable = false;  // 방장이 아닌 경우 게임 시작 버튼 비활성화
         }
     }
 
@@ -199,6 +213,30 @@ public class RoomUIManager : MonoBehaviourPunCallbacks
             }
         }
     }
+
+    // 모든 유저가 궁극기를 선택했는지 확인하는 함수
+    private bool AllPlayersSelectedUltimate()
+    {
+        // 방의 모든 플레이어가 궁극기를 선택했는지 확인
+        return PhotonNetwork.CurrentRoom.PlayerCount == selectedUltimates.Count;
+    }
+
+    // 게임 시작 버튼 클릭 시 호출되는 함수 (방장만)
+    public void StartGame()
+    {
+        if (AllPlayersSelectedUltimate())
+        {
+            Debug.Log("모든 플레이어가 궁극기를 선택했으므로 게임을 시작합니다.");
+
+            // 이 메서드를 사용하면 방에 있는 모든 클라이언트가 동기화된 상태로 씬을 로드합니다.
+            PhotonNetwork.LoadLevel("1.PlayScene");  // 모든 플레이어가 동기화된 씬 로드
+        }
+        else
+        {
+            Debug.Log("모든 플레이어가 궁극기를 선택하지 않았습니다.");
+        }
+    }
+
 
     // 새로운 플레이어가 방에 들어왔을 때 호출되는 콜백
     public override void OnPlayerEnteredRoom(Player newPlayer)
