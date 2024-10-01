@@ -42,6 +42,13 @@ MonoBehaviour:
   - DeselectUltimate
   - SelectUltimate
   - ToGameScene
+  - SyncPlayerColor
+  - RPC_ShootBasicBullet
+  - RPC_ShootChargedBullet
+  - DestroyBullet
+  - Die
+  - DropItem
+  - TakeDamage
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

@@ -70,6 +70,30 @@ public class MyPlayer : MonoBehaviourPun
         deathUI.SetActive(false);
     }
 
+    [PunRPC]
+    public void SyncPlayerColor(int actorNumber, float r, float g, float b)
+    {
+        // 모든 플레이어의 PhotonView를 찾고, 해당 플레이어의 색상을 변경
+        foreach (var player in FindObjectsOfType<PhotonView>())
+        {
+            // PhotonView 소유주가 있는지 확인하고, 그 소유주가 플레이어인지 확인
+            if (player.Owner != null && player.Owner.ActorNumber == actorNumber && player.CompareTag("Player"))
+            {
+                SpriteRenderer playerSpriteRenderer = player.GetComponent<SpriteRenderer>();
+
+                if (playerSpriteRenderer != null)
+                {
+                    playerSpriteRenderer.color = new Color(r, g, b);
+                }
+                else
+                {
+                    Debug.LogWarning("Player SpriteRenderer not found.");
+                }
+            }
+        }
+    }
+
+
     void LateUpdate()
     {
         if (photonView.IsMine)

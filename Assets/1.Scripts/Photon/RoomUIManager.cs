@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using Photon.Pun;
 using Photon.Realtime;
+using ExitGames.Client.Photon;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
@@ -149,26 +150,33 @@ public class RoomUIManager : MonoBehaviourPunCallbacks
         selectedUltimates[playerIndex] = ultimateIndex;
         globallySelectedUltimates.Add(ultimateIndex); // 전역 선택에 추가
 
+        // 로컬 플레이어라면 궁극기 선택 정보를 커스텀 프로퍼티에 저장
+        if (PhotonNetwork.LocalPlayer.ActorNumber - 1 == playerIndex)
+        {
+            // 궁극기 정보를 커스텀 프로퍼티로 저장하여 네트워크 동기화
+            Hashtable playerProperties = new Hashtable();
+            playerProperties["SelectedUltimate"] = ultimateIndex;
+            PhotonNetwork.LocalPlayer.SetCustomProperties(playerProperties);
+        }
+
         // 궁극기 선택에 따라 중앙 이미지를 변경
         switch (ultimateIndex)
         {
             case 0:
                 ultimateSelectionImages[playerIndex].sprite = iceSprite;   // 얼음
-                Debug.Log("Ice sprite selected");
                 break;
             case 1:
                 ultimateSelectionImages[playerIndex].sprite = fireSprite;  // 불
-                Debug.Log("Fire sprite selected");
                 break;
             case 2:
                 ultimateSelectionImages[playerIndex].sprite = healSprite;  // 치유
-                Debug.Log("Heal sprite selected");
                 break;
         }
 
         // UI 상태 갱신
         UpdateUltimateUI();
     }
+
 
     [PunRPC]
     public void DeselectUltimate(int playerIndex, int ultimateIndex)

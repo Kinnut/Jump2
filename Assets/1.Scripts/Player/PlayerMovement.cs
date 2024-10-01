@@ -44,7 +44,7 @@ public class PlayerMovement : MonoBehaviourPun
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
 
-        // 마우스 위치를 업데이트
+        // 마우스 위치를 업데이트 (로컬 플레이어만)
         mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         // 대시 입력 처리 (Shift 키)
@@ -75,10 +75,13 @@ public class PlayerMovement : MonoBehaviourPun
             rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
         }
 
-        // 캐릭터가 마우스를 향해 회전
-        Vector2 lookDir = mousePos - rb.position;
-        float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg - 90f;
-        rb.rotation = angle;
+        // 캐릭터가 마우스를 향해 회전 (로컬 플레이어만 회전)
+        if (photonView.IsMine)  // 로컬 플레이어만 회전 처리
+        {
+            Vector2 lookDir = mousePos - rb.position;
+            float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg - 90f;
+            rb.rotation = angle;
+        }
     }
 
     // 대시 처리

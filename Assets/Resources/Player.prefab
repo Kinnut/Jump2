@@ -1834,10 +1834,6 @@ MonoBehaviour:
   rapidFireRate: 0.1
   rapidFireDuration: 10
   rapidFireCooldown: 30
-  basicBulletPrefab: {fileID: 6404541088622165706, guid: 68ecfda204611ec4197043d2658a4718, type: 3}
-  chargedBulletPref1: {fileID: 2272769046393630964, guid: 649c09b5f121a724495fbe53394c1c77, type: 3}
-  chargedBulletPref2: {fileID: 147775844110061784, guid: 9e6531e4c05290449b2b7694ca3f5803, type: 3}
-  chargedBulletPref3: {fileID: 5677650476629976921, guid: f6c5bb14b951e3743b22f2e194cf2b37, type: 3}
   firePoint: {fileID: 1006523725287975019}
   bulletSpeed: 20
   chargeGaugeImage: {fileID: 4149128298291527331}
@@ -1845,7 +1841,7 @@ MonoBehaviour:
   shootSFX: {fileID: 8300000, guid: 22ca13ce39375d54fb1ece24b867a124, type: 3}
   bulletPrefabs:
   - {fileID: 6404541088622165706, guid: 68ecfda204611ec4197043d2658a4718, type: 3}
-  - {fileID: 6149470006494501336, guid: 77ff8b911fcf8c04e84228993e960a10, type: 3}
+  - {fileID: 6235688186303680031, guid: 805c5a66fbab90a458d758156c1b9755, type: 3}
   - {fileID: 798939833779975503, guid: 64b6e481e9979c0499f255dfd0001cbf, type: 3}
 --- !u!114 &4528025357581105545
 MonoBehaviour:

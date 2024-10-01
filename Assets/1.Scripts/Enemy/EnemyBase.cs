@@ -1,13 +1,13 @@
 using System;
 using UnityEngine;
+using Photon.Pun;
 
-public abstract class EnemyBase : MonoBehaviour
+public abstract class EnemyBase : MonoBehaviourPun
 {
     public float maxHealth = 100f;
     protected float currentHealth;
     public float moveSpeed = 2f;
     public GameObject[] itemPrefabs;
-    private ScoreManager scoreManager;
     private PlayerUltimate playerUltimate;
     private CoinManager coinManager;  // 코인 매니저 참조
 
@@ -19,7 +19,6 @@ public abstract class EnemyBase : MonoBehaviour
     protected virtual void Start()
     {
         currentHealth = maxHealth;
-        scoreManager = FindObjectOfType<ScoreManager>();
         playerUltimate = FindObjectOfType<PlayerUltimate>();
         coinManager = FindObjectOfType<CoinManager>();  // 코인 매니저를 찾음
     }
@@ -35,6 +34,7 @@ public abstract class EnemyBase : MonoBehaviour
         // 기본적인 적의 업데이트 로직을 작성하거나, 자식 클래스에서 재정의
     }
 
+    [PunRPC]
     public void TakeDamage(float damage, bool isPlayer)
     {
         currentHealth -= damage;
@@ -42,40 +42,44 @@ public abstract class EnemyBase : MonoBehaviour
         if (isPlayer)
         {
             lastHitByPlayer = true;  // 플레이어가 마지막으로 공격했음을 기록
-            playerUltimate.OnHitEnemy();  // 플레이어 궁극기 게이지 충전
+            playerUltimate.OnHitEnemy();
         }
 
         if (currentHealth <= 0)
         {
-            Die();
+            // 마스터 클라이언트에서만 Die RPC를 호출
+            photonView.RPC("Die", RpcTarget.AllBuffered);
         }
     }
 
+    [PunRPC]
     protected virtual void Die()
     {
         if (lastHitByPlayer)
         {
             playerUltimate.OnKillEnemy();
 
-            // 코인 획득 로직 추가
             if (coinManager != null)
             {
-                coinManager.AddCoins(coinReward);  // 플레이어가 처치했을 때만 코인 추가
+                coinManager.AddCoins(coinReward);
             }
         }
 
         DropItem();
-        OnEnemyDestroyed?.Invoke();
+        OnEnemyDestroyed?.Invoke();  // 이벤트 호출
         gameObject.SetActive(false);
     }
 
+
+    [PunRPC]
     protected void DropItem()
     {
+        // 아이템 드롭 동기화
         float dropChance = UnityEngine.Random.Range(0f, 1f);
         if (dropChance <= 0.05f)
         {
             int randomIndex = UnityEngine.Random.Range(0, itemPrefabs.Length);
-            Instantiate(itemPrefabs[randomIndex], transform.position, Quaternion.identity);
+            PhotonNetwork.Instantiate(itemPrefabs[randomIndex].name, transform.position, Quaternion.identity);
         }
     }
 
