@@ -54,13 +54,13 @@ public class Crystal : MonoBehaviour
     }
 
     // 범위 내 플레이어를 확인하고 상점 UI를 띄우는 함수
-    void CheckPlayersInRange()
+    private void CheckPlayersInRange()
     {
-        // 현재 게임 내 모든 플레이어를 추적
-        foreach (Photon.Realtime.Player player in PhotonNetwork.PlayerList)
+        // 모든 플레이어를 태그를 통해 찾습니다. 플레이어에게 "Player" 태그가 있다고 가정
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+
+        foreach (GameObject playerObj in players)
         {
-            // 각 플레이어의 위치를 가져와 크리스탈과의 거리를 계산
-            GameObject playerObj = PhotonView.Find(player.ActorNumber)?.gameObject;
             if (playerObj != null)
             {
                 float distanceToPlayer = Vector2.Distance(transform.position, playerObj.transform.position);
@@ -74,7 +74,7 @@ public class Crystal : MonoBehaviour
                         isPlayerInRange = true;
                     }
 
-                    // F키를 눌렀을 때 상점 UI 활성화
+                    // F키를 눌렀을 때 상점 UI 활성화 (로컬 플레이어일 때만)
                     if (Input.GetKeyDown(KeyCode.F) && playerObj.GetComponent<PhotonView>().IsMine)
                     {
                         OpenShop();
@@ -89,6 +89,7 @@ public class Crystal : MonoBehaviour
             }
         }
     }
+
 
     private void OpenShop()
     {

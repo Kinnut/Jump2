@@ -1,17 +1,24 @@
 using UnityEngine;
 using TMPro;
+using Photon.Pun;
 
 public class ShopManager : MonoBehaviour
 {
     public CrystalAttack crystalAttack;
     public CoinManager coinManager;  // 코인 매니저 참조
-    public MyPlayer player;            // 플레이어 참조 (힐 및 속도 증가)
+    private MyPlayer player;          // 플레이어 참조 (힐 및 속도 증가)
 
     // 아이템 가격
     public int bulletUpgradeCost = 300;
     public int healCost = 150;
     public int speedBoostCost = 200;
     public int crystalAttackCost = 500;
+
+    // MyPlayer.cs (플레이어 스크립트)
+    public void SetPlayer(MyPlayer localPlayer)
+    {
+        player = localPlayer;
+    }
 
     // 총알 강화
     public void BuyBulletUpgrade()
@@ -40,6 +47,7 @@ public class ShopManager : MonoBehaviour
         }
     }
 
+    // 크리스탈 공격 구매
     public void BuyCrystalAttack()
     {
         if (coinManager.SpendCoins(crystalAttackCost))

@@ -5,7 +5,6 @@ using Photon.Realtime;  // Photon의 Room 관련 기능 사용
 using UnityEngine.UI;  // ScrollView 및 Toggle 사용
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.SceneManagement;
 
 public class RoomManager : MonoBehaviourPunCallbacks
 {
@@ -17,7 +16,9 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public GameObject passwordPanel;           // 비밀번호 입력 패널
     public TMP_InputField passwordConfirmInputField;  // 비밀번호 확인 필드
     public Button passwordConfirmButton;       // 비밀번호 확인 버튼
-    public GameObject roomUIPanel; // 방 UI를 관리할 Panel
+    public GameObject roomUIPanel;             // 방 UI를 관리할 Panel
+    public GameObject warningPanel;            // 경고 메시지를 표시할 패널
+    public TMP_Text warningText;               // 경고 메시지를 표시할 Text
 
     private const int maxPlayers = 3;          // 방의 최대 플레이어 수
     private const int passwordLength = 4;      // 비밀번호 최대 길이
@@ -34,6 +35,16 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
         // 비밀번호 확인 버튼 클릭 이벤트 설정
         passwordConfirmButton.onClick.AddListener(OnPasswordConfirmButtonClicked);
+
+        // 경고 패널은 기본적으로 비활성화
+        warningPanel.SetActive(false);
+    }
+
+    // 경고 메시지 표시 함수
+    private void ShowWarning(string message)
+    {
+        warningText.text = message;
+        warningPanel.SetActive(true);
     }
 
     // 방 목록 새로고침 버튼 클릭 시 호출되는 함수
@@ -62,7 +73,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
         if (string.IsNullOrEmpty(roomName))
         {
-            Debug.LogError("방 이름을 입력하세요.");
+            ShowWarning("방 이름을 입력하세요.");
             return;
         }
 
@@ -71,7 +82,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
             // 비공개 방의 경우 비밀번호 입력 유효성 검사
             if (password.Length != passwordLength || !int.TryParse(password, out _))
             {
-                Debug.LogError("비밀번호는 4자리 숫자여야 합니다.");
+                ShowWarning("비밀번호는 4자리 숫자여야 합니다.");
                 return;
             }
         }
@@ -98,7 +109,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     // 방 생성 실패 시 호출되는 콜백
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
-        Debug.LogError("방 생성 실패: " + message);
+        ShowWarning("방 생성 실패: " + message);
     }
 
     // 방 목록 갱신 시 호출되는 콜백 (Scroll View 안에 방 목록 표시)
@@ -166,12 +177,12 @@ public class RoomManager : MonoBehaviourPunCallbacks
             }
             else
             {
-                Debug.LogError("비밀번호가 틀렸습니다.");
+                ShowWarning("비밀번호가 틀렸습니다.");
             }
         }
         else
         {
-            Debug.LogError("방 정보를 찾을 수 없습니다.");
+            ShowWarning("방 정보를 찾을 수 없습니다.");
         }
     }
 

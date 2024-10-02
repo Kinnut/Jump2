@@ -139,7 +139,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &11030708
 RectTransform:
   m_ObjectHideFlags: 0
@@ -646,7 +646,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 920691070}
         m_TargetAssemblyTypeName: ShopManager, Assembly-CSharp
         m_MethodName: BuyBulletUpgrade
         m_Mode: 1
@@ -1236,7 +1236,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &287290795
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3721,7 +3721,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 920691070}
         m_TargetAssemblyTypeName: ShopManager, Assembly-CSharp
         m_MethodName: BuyHeal
         m_Mode: 1
@@ -4088,7 +4088,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 920691070}
         m_TargetAssemblyTypeName: ShopManager, Assembly-CSharp
         m_MethodName: BuySpeedBoost
         m_Mode: 1
@@ -4314,7 +4314,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   crystalAttack: {fileID: 2028697114}
   coinManager: {fileID: 1375540633}
-  player: {fileID: 5578771164972054943, guid: 990519e1b862b0e4692be51d05f98924, type: 3}
   bulletUpgradeCost: 300
   healCost: 150
   speedBoostCost: 200
@@ -7115,7 +7114,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 920691070}
         m_TargetAssemblyTypeName: ShopManager, Assembly-CSharp
         m_MethodName: BuyCrystalAttack
         m_Mode: 1
@@ -7903,7 +7902,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5046b3b861488754e8a0953f06c431ad, type: 3}
+  m_Sprite: {fileID: 21300000, guid: bde71f0e109cf094fb45d950bf278611, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

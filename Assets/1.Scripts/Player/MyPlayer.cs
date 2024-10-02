@@ -34,6 +34,12 @@ public class MyPlayer : MonoBehaviourPun
 
     void Start()
     {
+        ShopManager shopManager = FindObjectOfType<ShopManager>();
+        if (shopManager != null && photonView.IsMine)
+        {
+            shopManager.SetPlayer(this);  // 참조를 전달
+        }
+
         // 플레이어의 자식 오브젝트로 포함된 Canvas를 찾음
         playerCanvas = GetComponentInChildren<Canvas>();
 

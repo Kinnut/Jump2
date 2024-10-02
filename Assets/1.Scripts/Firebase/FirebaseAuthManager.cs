@@ -23,10 +23,13 @@ public class FirebaseAuthManager : MonoBehaviourPunCallbacks
 
     public Toggle autoLoginToggle;                    // 자동 로그인 토글 버튼
 
+    public GameObject warningPanel;                   // 경고 메시지 패널
+    public TextMeshProUGUI warningText;               // 경고 메시지를 표시할 Text
+
+    public TextMeshProUGUI networkStateText;
+
     private FirebaseAuth auth;
     private DatabaseReference databaseRef;
-
-    public TextMeshProUGUI networkState;
 
     void Start()
     {
@@ -41,17 +44,21 @@ public class FirebaseAuthManager : MonoBehaviourPunCallbacks
             }
             else
             {
-                Debug.LogError("Firebase 초기화 실패: " + task.Exception);
+                ShowWarning("Firebase 초기화 실패: " + task.Exception.Message);
             }
         });
 
         autoLoginToggle.isOn = PlayerPrefs.GetInt("AutoLogin", 0) == 1;
         autoLoginToggle.onValueChanged.AddListener(delegate { OnToggleChanged(); });
+
+        // 포톤 서버 연결 시도
+        ConnectToPhotonServer();
     }
 
     private void Update()
     {
-        networkState.text = PhotonNetwork.NetworkClientState.ToString();
+        // 네트워크 상태를 표시
+        networkStateText.text = PhotonNetwork.NetworkClientState.ToString();
     }
 
     private async void CheckLoginStatus()
@@ -78,10 +85,6 @@ public class FirebaseAuthManager : MonoBehaviourPunCallbacks
         {
             await LoadUsernameFromDatabase(user.UserId);
             loginPanel.SetActive(false);
-            Debug.Log("자동 로그인 성공: " + user.Email);
-
-            // Firebase 로그인 성공 후 Photon 서버 연결
-            ConnectToPhotonServer();
         }
     }
 
@@ -89,8 +92,6 @@ public class FirebaseAuthManager : MonoBehaviourPunCallbacks
     {
         PlayerPrefs.SetInt("AutoLogin", autoLoginToggle.isOn ? 1 : 0);
         PlayerPrefs.Save();
-
-        Debug.Log("자동 로그인 상태 저장: " + (autoLoginToggle.isOn ? "켜짐" : "꺼짐"));
     }
 
     public async void Register()
@@ -111,7 +112,7 @@ public class FirebaseAuthManager : MonoBehaviourPunCallbacks
         }
         catch (System.Exception e)
         {
-            Debug.LogError("회원가입 실패: " + e.Message);
+            ShowWarning("회원가입 실패: " + e.Message);
         }
     }
 
@@ -140,13 +141,10 @@ public class FirebaseAuthManager : MonoBehaviourPunCallbacks
 
             PlayerPrefs.SetInt("AutoLogin", autoLoginToggle.isOn ? 1 : 0);
             PlayerPrefs.Save();
-
-            // Firebase 로그인 성공 후 Photon 서버 연결
-            ConnectToPhotonServer();
         }
         catch (System.Exception e)
         {
-            Debug.LogError("로그인 실패: " + e.Message);
+            ShowWarning("로그인 실패: " + e.Message);
         }
     }
 
@@ -165,23 +163,19 @@ public class FirebaseAuthManager : MonoBehaviourPunCallbacks
                     {
                         userIDText.text = "아이디: " + username;
                     }
-
-                    // Photon에 닉네임 설정
                     PhotonNetwork.NickName = username;
-                    Debug.Log("Photon 닉네임 설정: " + username);
                 }
                 else
                 {
-                    Debug.LogError("아이디 불러오기 실패: 데이터 없음");
+                    ShowWarning("아이디 불러오기 실패: 데이터 없음");
                 }
             }
             catch (System.Exception e)
             {
-                Debug.LogError("데이터베이스에서 유저 이름 불러오기 실패: " + e.Message);
+                ShowWarning("데이터베이스에서 유저 이름 불러오기 실패: " + e.Message);
             }
         }
     }
-
 
     public void Logout()
     {
@@ -207,29 +201,22 @@ public class FirebaseAuthManager : MonoBehaviourPunCallbacks
         {
             // 자동 로그인이 꺼져 있으면 앱 종료 시 Firebase 로그아웃 처리
             auth.SignOut();
-            Debug.Log("앱 종료 시 로그아웃 처리됨.");
         }
     }
 
-    // Photon 서버 연결 함수
+    // 포톤 서버 연결 함수 (경고 패널에 출력하지 않음)
     private void ConnectToPhotonServer()
     {
         if (!PhotonNetwork.IsConnected)
         {
             PhotonNetwork.ConnectUsingSettings();
-            Debug.Log("Photon 서버에 연결 시도 중...");
         }
     }
 
-    // Photon 서버 연결 성공 콜백
-    public override void OnConnectedToMaster()
+    // 경고 메시지 표시 함수 (Firebase 관련 오류만 표시)
+    private void ShowWarning(string message)
     {
-        Debug.Log("Photon 서버에 성공적으로 연결되었습니다.");
-    }
-
-    // Photon 서버 연결 실패 콜백
-    public override void OnDisconnected(Photon.Realtime.DisconnectCause cause)
-    {
-        Debug.LogError("Photon 서버 연결 실패: " + cause.ToString());
+        warningText.text = message;
+        warningPanel.SetActive(true);
     }
 }
