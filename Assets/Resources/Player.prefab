@@ -1772,7 +1772,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3763595516133474675}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.37999988, y: -2.08, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1794,7 +1794,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   health: 100
   healthBarImage: {fileID: 4861911595956269261}
-  speed: 5
+  maxHealth: 0
   deathUI: {fileID: 153454616148484875}
   countdownText: {fileID: 3426689186082025891}
   isDead: 0
@@ -1814,6 +1814,7 @@ MonoBehaviour:
   dashSpeed: 10
   dashDuration: 0.2
   dashCooldown: 10
+  dashCooldownImage: {fileID: 588317608336461020}
 --- !u!114 &6629263327222593824
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1856,11 +1857,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ultimateCharge: 0
-  chargePerHit: 0.3
+  chargePerHit: 0.5
   chargePerKill: 3
   chargePerTime: 1
   ultimateBar: {fileID: 1325752964150862280}
   ultimatePercentageText: {fileID: 7843840481200673939}
+  selectedUltimate: 0
 --- !u!212 &6462965508331670412
 SpriteRenderer:
   m_ObjectHideFlags: 0

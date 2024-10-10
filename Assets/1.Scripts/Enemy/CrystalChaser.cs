@@ -1,3 +1,5 @@
+using Photon.Pun;
+using System.Collections;
 using UnityEngine;
 
 public class CrystalChaser : EnemyBase
@@ -5,8 +7,9 @@ public class CrystalChaser : EnemyBase
     public float explosionRange = 3f; // 크리스탈과의 폭발 범위
     public float damage = 50f; // 크리스탈에 주는 피해
     private Transform crystal;
-    private Crystal crystalScript; // Crystal 스크립트 참조
-    private bool hasExploded = false; // 자폭 여부 체크
+    private Crystal crystalScript;
+    private bool hasExploded = false;
+    private float moveSpeedOriginal;
 
     protected override void Start()
     {
@@ -14,13 +17,14 @@ public class CrystalChaser : EnemyBase
         crystal = GameObject.FindGameObjectWithTag("Crystal").transform;
         if (crystal != null)
         {
-            crystalScript = crystal.GetComponent<Crystal>(); // Crystal 스크립트 가져오기
+            crystalScript = crystal.GetComponent<Crystal>();
         }
+        moveSpeedOriginal = moveSpeed;  // 기본 이동 속도 저장
     }
 
     protected override void Update()
     {
-        if (!hasExploded) // 자폭하지 않았다면 움직임과 자폭 체크
+        if (!hasExploded)
         {
             Move();
             CheckForExplosion();
@@ -51,13 +55,24 @@ public class CrystalChaser : EnemyBase
 
     private void Explode()
     {
-        // 크리스탈에 피해
         if (crystalScript != null)
         {
-            crystalScript.TakeDamage(damage); // 크리스탈 스크립트의 TakeDamage 호출
+            crystalScript.TakeDamage(damage);
         }
+        hasExploded = true;
+        Die();
+    }
 
-        hasExploded = true; // 자폭 처리
-        Die(); // 기본 사망 처리로 변경
+    // 적을 멈추게 하는 함수
+    public void FreezeForDuration(float duration)
+    {
+        StartCoroutine(FreezeCoroutine(duration));
+    }
+
+    private IEnumerator FreezeCoroutine(float duration)
+    {
+        moveSpeed = 0f;
+        yield return new WaitForSeconds(duration);
+        moveSpeed = moveSpeedOriginal;  // 원래 속도로 복구
     }
 }

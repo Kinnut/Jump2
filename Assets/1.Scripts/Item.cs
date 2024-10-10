@@ -56,10 +56,20 @@ public class BoostItem : Item
 
     public override void ApplyEffect(MyPlayer player)
     {
-        player.IncreaseSpeed(speedIncrease, duration);
-        Debug.Log("속도 증가: " + speedIncrease + " for " + duration + " seconds");
+        // PlayerMovement 스크립트를 가져와서 이동 속도 증가를 적용
+        PlayerMovement playerMovement = player.GetComponent<PlayerMovement>();
+        if (playerMovement != null)
+        {
+            playerMovement.IncreaseSpeed(speedIncrease, duration);  // PlayerMovement의 IncreaseSpeed 호출
+            Debug.Log("속도 증가: " + speedIncrease + " for " + duration + " seconds");
+        }
+        else
+        {
+            Debug.LogError("PlayerMovement 스크립트를 찾을 수 없습니다.");
+        }
     }
 }
+
 
 public class QuestionItem : Item
 {

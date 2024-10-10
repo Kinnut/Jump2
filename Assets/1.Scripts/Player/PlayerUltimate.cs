@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro; // TextMeshPro를 사용하기 위해 추가
+using Photon.Pun;
 
-public class PlayerUltimate : MonoBehaviour
+public class PlayerUltimate : MonoBehaviourPun
 {
     public float ultimateCharge = 0f;  // 궁극기 게이지 (0% ~ 100%)
     public float chargePerHit = 0.2f;    // 상대에게 데미지를 입힐 때 충전량
@@ -16,6 +17,7 @@ public class PlayerUltimate : MonoBehaviour
     private MyPlayer player;
 
     private bool canUseUltimate = false;  // 궁극기 사용 가능 여부
+    public int selectedUltimate = 0;
 
     private void Start()
     {
@@ -83,16 +85,56 @@ public class PlayerUltimate : MonoBehaviour
     void UseUltimate()
     {
         Debug.Log("궁극기 발동!");
-        ultimateCharge = 0;  // 궁극기 사용 후 게이지 리셋
-        if (ultimateBar != null)
+
+        // 선택된 궁극기에 따라 다른 효과 발동
+        if (selectedUltimate == 0) // 얼음 궁극기
         {
-            ultimateBar.fillAmount = 0f;  // UI 리셋
+            photonView.RPC("FreezeEnemies", RpcTarget.All);
+        }
+        else if (selectedUltimate == 1) // 불 궁극기
+        {
+            photonView.RPC("BoostAllies", RpcTarget.All);
+        }
+        else if (selectedUltimate == 2) // 회복 궁극기
+        {
+            photonView.RPC("HealAllAllies", RpcTarget.All);
         }
 
-        // 궁극기 퍼센트 텍스트도 리셋
-        if (ultimatePercentageText != null)
+        ultimateCharge = 0;  // 궁극기 사용 후 게이지 리셋
+        ultimateBar.fillAmount = 0f;
+        ultimatePercentageText.text = "0%";
+    }
+
+    // 모든 적을 10초간 멈추는 함수
+    [PunRPC]
+    void FreezeEnemies()
+    {
+        var enemies = FindObjectsOfType<CrystalChaser>();
+        foreach (var enemy in enemies)
         {
-            ultimatePercentageText.text = "0%";
+            enemy.FreezeForDuration(10f);
+        }
+    }
+
+    // 모든 아군의 속도와 공격속도를 20초간 증가시키는 함수
+    [PunRPC]
+    void BoostAllies()
+    {
+        var players = FindObjectsOfType<PlayerMovement>();
+        foreach (var player in players)
+        {
+            player.IncreaseSpeed(2f, 20f);
+        }
+    }
+
+    // 모든 아군의 체력을 회복시키는 함수
+    [PunRPC]
+    void HealAllAllies()
+    {
+        var players = FindObjectsOfType<MyPlayer>();
+        foreach (var player in players)
+        {
+            player.Heal(player.maxHealth);
         }
     }
 }

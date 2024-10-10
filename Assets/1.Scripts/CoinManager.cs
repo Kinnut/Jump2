@@ -1,7 +1,8 @@
-using UnityEngine;
+using Photon.Pun;
 using TMPro;
+using UnityEngine;
 
-public class CoinManager : MonoBehaviour
+public class CoinManager : MonoBehaviourPun
 {
     public int currentCoins = 0;  // 현재 코인 수
     public TextMeshProUGUI coin;
@@ -18,7 +19,6 @@ public class CoinManager : MonoBehaviour
         UpdateCoinUI();
     }
 
-    // 코인 차감 메서드 추가
     public bool SpendCoins(int amount)
     {
         if (currentCoins >= amount)
@@ -33,6 +33,13 @@ public class CoinManager : MonoBehaviour
             Debug.LogWarning("코인이 부족합니다!");
             return false;
         }
+    }
+
+    // 모든 플레이어에게 코인을 분배하는 RPC 메서드 추가
+    [PunRPC]
+    public void DistributeCoins(int amount)
+    {
+        AddCoins(amount);
     }
 
     private void UpdateCoinUI()

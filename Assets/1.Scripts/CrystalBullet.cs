@@ -1,6 +1,7 @@
 using UnityEngine;
+using Photon.Pun;
 
-public class CrystalBullet : MonoBehaviour
+public class CrystalBullet : MonoBehaviourPun
 {
     public float speed = 10f;         // 총알 속도
     public float damage = 20f;        // 총알 데미지
@@ -12,19 +13,16 @@ public class CrystalBullet : MonoBehaviour
         target = enemyTarget;         // 타겟 설정
         if (target != null)
         {
-            // 총알의 방향을 목표로 회전
-            Vector2 direction = (target.position - transform.position).normalized;
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
+            photonView.RPC("SyncTarget", RpcTarget.All, target.GetComponent<PhotonView>().ViewID); // 타겟 동기화
+            UpdateDirection(); // 목표 방향 갱신
         }
     }
 
     void Update()
     {
-        // 목표가 없으면 총알을 파괴
         if (target == null)
         {
-            Destroy(gameObject);
+            DestroySelf(); // 목표가 없으면 총알을 파괴
             return;
         }
 
@@ -38,6 +36,18 @@ public class CrystalBullet : MonoBehaviour
         }
     }
 
+    // 타겟 ID를 받아 타겟을 설정하는 메서드
+    [PunRPC]
+    void SyncTarget(int targetViewId)
+    {
+        PhotonView targetView = PhotonView.Find(targetViewId); // PhotonView ID를 통해 타겟을 찾음
+        if (targetView != null)
+        {
+            target = targetView.transform; // 타겟의 Transform 설정
+            UpdateDirection(); // 타겟의 방향 갱신
+        }
+    }
+
     // 타겟에 도착했을 때 실행되는 메서드
     void HitTarget()
     {
@@ -48,8 +58,18 @@ public class CrystalBullet : MonoBehaviour
             enemy.TakeDamage(damage, false);  // 크리스탈이 공격한 것으로 처리
         }
 
-        // 총알 파괴
-        Destroy(gameObject);
+        DestroySelf(); // 총알 파괴
+    }
+
+    // 목표 방향을 계산하고 총알 회전
+    void UpdateDirection()
+    {
+        if (target != null)
+        {
+            Vector2 direction = (target.position - transform.position).normalized;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
+        }
     }
 
     // 다른 물체와 충돌했을 때도 총알 파괴
@@ -58,6 +78,32 @@ public class CrystalBullet : MonoBehaviour
         if (hitInfo.transform == target)
         {
             HitTarget(); // 목표에 도착하면 타겟 히트
+        }
+    }
+
+    // 안전하게 네트워크 상에서 총알을 제거하는 함수
+    void DestroySelf()
+    {
+        // 소유자가 아니거나 마스터 클라이언트가 아닌 경우, 마스터 클라이언트에게 파괴 요청
+        if (photonView.IsMine || PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.Destroy(gameObject); // 총알 파괴
+        }
+        else
+        {
+            // 마스터 클라이언트에게 총알을 파괴하도록 요청
+            photonView.RPC("RequestDestroy", RpcTarget.MasterClient, photonView.ViewID);
+        }
+    }
+
+    // 마스터 클라이언트가 파괴를 처리하는 RPC
+    [PunRPC]
+    void RequestDestroy(int viewID)
+    {
+        PhotonView targetView = PhotonView.Find(viewID);
+        if (targetView != null && PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.Destroy(targetView.gameObject);
         }
     }
 }

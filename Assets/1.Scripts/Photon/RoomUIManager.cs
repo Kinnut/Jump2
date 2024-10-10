@@ -108,8 +108,6 @@ public class RoomUIManager : MonoBehaviourPunCallbacks
     // 궁극기 선택 시 호출되는 함수
     public void OnUltimateSelected(int buttonIndex)
     {
-        Debug.Log("궁 선택 눌럿음");
-
         int playerIndex = buttonIndex / ultimatesPerPlayer;  // 플레이어 인덱스 계산
         int ultimateIndex = buttonIndex % ultimatesPerPlayer;  // 해당 플레이어가 선택한 궁극기 인덱스
 
@@ -119,7 +117,6 @@ public class RoomUIManager : MonoBehaviourPunCallbacks
         // 이미 다른 유저가 해당 궁극기를 선택했으면 선택 불가
         if (globallySelectedUltimates.Contains(ultimateIndex))
         {
-            Debug.Log($"Ultimate {ultimateIndex} is already selected by another player.");
             return;
         }
 

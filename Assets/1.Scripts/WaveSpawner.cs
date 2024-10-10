@@ -20,6 +20,7 @@ public class WaveSpawner : MonoBehaviourPun
     private bool waveInProgress = false;
 
     public TextMeshProUGUI waveText;
+    public TextMeshProUGUI waveCountdownText;  // 웨이브 대기시간을 표시할 텍스트
 
     void Start()
     {
@@ -29,7 +30,8 @@ public class WaveSpawner : MonoBehaviourPun
             return;
         }
 
-        UpdateWaveText();
+        photonView.RPC("UpdateWaveText", RpcTarget.All, currentWave);
+        waveCountdownText.gameObject.SetActive(false);  // 대기 시간 텍스트 숨김
         StartCoroutine(StartNextWave());
     }
 
@@ -47,11 +49,26 @@ public class WaveSpawner : MonoBehaviourPun
 
         waveInProgress = true;
 
+        // 웨이브 대기 시간 표시 시작
+        waveCountdownText.gameObject.SetActive(true);
+
+        float countdown = waveWaitTime;
+        while (countdown > 0)
+        {
+            countdown -= Time.deltaTime;
+            photonView.RPC("UpdateWaveCountdownText", RpcTarget.All, Mathf.Ceil(countdown)); // 남은 시간 동기화
+            yield return null;
+        }
+
+        // 대기 시간 끝나면 텍스트 숨김
+        photonView.RPC("HideWaveCountdownText", RpcTarget.All); // 모든 클라이언트에서 텍스트 숨김
+
         int enemiesToSpawn = startEnemiesPerWave + (currentWave / 2) * 2;
         int strongEnemyCount = Mathf.CeilToInt(enemiesToSpawn * 0.1f);
         int normalEnemyCount = enemiesToSpawn - strongEnemyCount;
 
         enemiesRemaining = enemiesToSpawn;
+        photonView.RPC("SyncEnemyCount", RpcTarget.All, enemiesRemaining);  // 모든 클라이언트에 적 수 동기화
 
         List<int> availableSpawnPoints = new List<int> { 0, 1, 2, 3 };
 
@@ -92,7 +109,7 @@ public class WaveSpawner : MonoBehaviourPun
         yield return new WaitForSeconds(waveWaitTime);
 
         currentWave++;
-        UpdateWaveText();
+        photonView.RPC("UpdateWaveText", RpcTarget.All, currentWave); // 모든 클라이언트에게 웨이브 정보 동기화
         waveInProgress = false;
     }
 
@@ -128,9 +145,9 @@ public class WaveSpawner : MonoBehaviourPun
     void OnEnemyDestroyed()
     {
         enemiesRemaining--;  // 적이 죽을 때마다 남은 적 수 감소
+        photonView.RPC("SyncEnemyCount", RpcTarget.All, enemiesRemaining); // 적 수 동기화
         Debug.Log("적이 죽었습니다. 남은 적: " + enemiesRemaining);
     }
-
 
     List<int> GetRandomSpawnIndices(List<int> availableSpawnPoints)
     {
@@ -146,11 +163,34 @@ public class WaveSpawner : MonoBehaviourPun
         return new List<int> { first, second };
     }
 
-    void UpdateWaveText()
+    [PunRPC] // RPC로 함수 선언
+    void UpdateWaveText(int wave)
     {
+        currentWave = wave;
         if (waveText != null)
         {
             waveText.text = "Wave " + currentWave;
         }
+    }
+
+    [PunRPC]
+    void UpdateWaveCountdownText(float countdown)
+    {
+        if (waveCountdownText != null)
+        {
+            waveCountdownText.text = "다음 웨이브까지 : " + countdown + "초";
+        }
+    }
+
+    [PunRPC]
+    void HideWaveCountdownText()
+    {
+        waveCountdownText.gameObject.SetActive(false);
+    }
+
+    [PunRPC]
+    void SyncEnemyCount(int remainingEnemies)
+    {
+        enemiesRemaining = remainingEnemies;  // 모든 클라이언트에서 적 수 동기화
     }
 }

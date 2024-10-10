@@ -49,6 +49,26 @@ MonoBehaviour:
   - Die
   - DropItem
   - TakeDamage
+  - UpdateWaveText
+  - ShowTimeUI
+  - StopTimeUI
+  - SyncTarget
+  - SyncTimeRemaining
+  - AddAttackTime
+  - AttackClosestEnemy
+  - FireAtEnemy
+  - RequestAddAttackTime
+  - RequestDestroy
+  - DistributeCoins
+  - BoostAllies
+  - FreezeEnemies
+  - HealAllAllies
+  - DeactivateEnemy
+  - UpdateWaveCountdownText
+  - TriggerGameEnd
+  - UpdateHealth
+  - HideWaveCountdownText
+  - SyncEnemyCount
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

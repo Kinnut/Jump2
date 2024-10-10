@@ -6,15 +6,11 @@ using UnityEngine.UI;
 
 public class MyPlayer : MonoBehaviourPun
 {
-    // 기존 변수들
     public float health = 100f;
     public Image healthBarImage;
-    private float maxHealth;
+    public float maxHealth;
 
     private CinemachineImpulseSource impulseSource;
-    public float speed = 5f;
-    private float defaultSpeed;
-    private bool isBoosted = false;
 
     private PlayerShooting playerShooting;
     private PlayerMovement playerMovement;  // PlayerMovement 스크립트 참조
@@ -63,7 +59,6 @@ public class MyPlayer : MonoBehaviourPun
         }
 
         maxHealth = health;
-        defaultSpeed = speed;
         UpdateHealthBar();
 
         impulseSource = GetComponent<CinemachineImpulseSource>();
@@ -79,10 +74,8 @@ public class MyPlayer : MonoBehaviourPun
     [PunRPC]
     public void SyncPlayerColor(int actorNumber, float r, float g, float b)
     {
-        // 모든 플레이어의 PhotonView를 찾고, 해당 플레이어의 색상을 변경
         foreach (var player in FindObjectsOfType<PhotonView>())
         {
-            // PhotonView 소유주가 있는지 확인하고, 그 소유주가 플레이어인지 확인
             if (player.Owner != null && player.Owner.ActorNumber == actorNumber && player.CompareTag("Player"))
             {
                 SpriteRenderer playerSpriteRenderer = player.GetComponent<SpriteRenderer>();
@@ -98,7 +91,6 @@ public class MyPlayer : MonoBehaviourPun
             }
         }
     }
-
 
     void LateUpdate()
     {
@@ -172,26 +164,6 @@ public class MyPlayer : MonoBehaviourPun
         Debug.Log("기본 공격이 강화되었습니다.");
     }
 
-    // 속도 증가 메서드
-    public void IncreaseSpeed(float amount, float duration)
-    {
-        if (!isBoosted)
-        {
-            speed += amount;
-            isBoosted = true;
-            Debug.Log("속도 증가: " + amount + " for " + duration + " seconds");
-            Invoke("ResetSpeed", duration);
-        }
-    }
-
-    // 속도 복원 메서드
-    private void ResetSpeed()
-    {
-        speed = defaultSpeed;
-        isBoosted = false;
-        Debug.Log("속도 원상복구");
-    }
-
     // 체력 바 업데이트 메서드
     void UpdateHealthBar()
     {
@@ -210,7 +182,6 @@ public class MyPlayer : MonoBehaviourPun
         deathUI.SetActive(true);
         respawnTime = 10f;
 
-        // 플레이어 이동 및 공격 비활성화
         DisablePlayer();
     }
 

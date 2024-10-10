@@ -1,8 +1,9 @@
 using System.Collections;
 using UnityEngine;
 using TMPro;
+using Photon.Pun;
 
-public class CrystalAttack : MonoBehaviour
+public class CrystalAttack : MonoBehaviourPun
 {
     public GameObject bulletPrefab;        // 크리스탈이 발사하는 총알 프리팹
     public Transform firePoint;            // 크리스탈의 발사 위치
@@ -16,64 +17,77 @@ public class CrystalAttack : MonoBehaviour
 
     void Update()
     {
-        // 크리스탈이 공격 중일 때만 적을 찾고 공격
         if (isAttacking)
         {
-            timeRemaining -= Time.deltaTime;
-            UpdateTimeUI();
+            if (PhotonNetwork.IsMasterClient)
+            {
+                // 마스터 클라이언트에서만 시간을 감소
+                timeRemaining -= Time.deltaTime;
 
+                // 모든 클라이언트에게 시간을 동기화
+                photonView.RPC("SyncTimeRemaining", RpcTarget.All, timeRemaining);
+            }
+
+            // 시간이 0이 되면 공격 종료
             if (timeRemaining <= 0)
             {
-                isAttacking = false;  // 공격 시간이 끝나면 공격 중단
+                isAttacking = false;
                 if (attackCoroutine != null)
                 {
                     StopCoroutine(attackCoroutine); // 코루틴 중지
                 }
-                timeRemainingText.gameObject.SetActive(false); // 시간이 0이 되면 TMP 숨김
+                photonView.RPC("StopTimeUI", RpcTarget.All); // 모든 클라이언트에서 UI 숨기기
             }
         }
     }
 
-    // 상점에서 크리스탈 공격 활성화 시 호출되는 메서드
     public void ActivateCrystalAttack(float additionalTime)
     {
-        timeRemaining += additionalTime;   // 추가된 시간을 누적
-        isAttacking = true;
-
-        if (!timeRemainingText.gameObject.activeSelf)
-        {
-            timeRemainingText.gameObject.SetActive(true);  // TMP 활성화
-        }
-
-        // 코루틴이 이미 실행 중이면 다시 시작하지 않음
-        if (attackCoroutine == null)
-        {
-            attackCoroutine = StartCoroutine(AttackRoutine());
-        }
-
-        Debug.Log("크리스탈이 " + timeRemaining + "초 동안 적을 공격합니다.");
+        // 모든 클라이언트가 시간을 추가하고 마스터 클라이언트에 전송
+        photonView.RPC("RequestAddAttackTime", RpcTarget.MasterClient, additionalTime); // 시간을 마스터 클라이언트로 전달
     }
 
-    // 크리스탈이 가장 가까운 적을 찾아 공격하는 루틴
+    [PunRPC]
+    void RequestAddAttackTime(float additionalTime)
+    {
+        // 마스터 클라이언트에서만 시간을 관리
+        if (PhotonNetwork.IsMasterClient)
+        {
+            timeRemaining += additionalTime;  // 추가된 시간을 누적
+            isAttacking = true;
+
+            if (attackCoroutine == null)
+            {
+                attackCoroutine = StartCoroutine(AttackRoutine());
+            }
+
+            // 모든 클라이언트에게 시간을 동기화
+            photonView.RPC("SyncTimeRemaining", RpcTarget.AllBuffered, timeRemaining);
+            photonView.RPC("ShowTimeUI", RpcTarget.AllBuffered); // 모든 클라이언트에서 UI 표시
+        }
+    }
+
     IEnumerator AttackRoutine()
     {
         while (isAttacking)
         {
-            AttackClosestEnemy(); // 가장 가까운 적을 찾아 공격
+            // 마스터 클라이언트에서만 적 공격
+            if (PhotonNetwork.IsMasterClient)
+            {
+                AttackClosestEnemy();
+            }
             yield return new WaitForSeconds(attackCooldown); // 공격 간격 유지
         }
 
-        attackCoroutine = null; // 코루틴 종료 시 null로 설정
+        attackCoroutine = null;
     }
 
-    // 크리스탈이 가장 가까운 적을 찾아 공격하는 메서드
     void AttackClosestEnemy()
     {
         Collider2D[] enemiesInRange = Physics2D.OverlapCircleAll(transform.position, attackRange);
         Transform closestEnemy = null;
         float shortestDistance = Mathf.Infinity;
 
-        // 범위 내 적을 찾음
         foreach (Collider2D enemy in enemiesInRange)
         {
             if (enemy.CompareTag("Enemy"))
@@ -87,25 +101,48 @@ public class CrystalAttack : MonoBehaviour
             }
         }
 
-        // 가장 가까운 적을 향해 총알 발사
         if (closestEnemy != null)
         {
-            FireAtEnemy(closestEnemy);
+            // 마스터 클라이언트에서만 총알을 생성
+            FireAtEnemy(closestEnemy.GetComponent<PhotonView>().ViewID);
         }
     }
 
-    // 적을 향해 총알을 발사하는 함수
-    void FireAtEnemy(Transform enemy)
+    void FireAtEnemy(int enemyViewID)
     {
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
-        bullet.GetComponent<CrystalBullet>().SetTarget(enemy); // 총알에 적의 위치 설정
+        PhotonView targetView = PhotonView.Find(enemyViewID); // 적의 PhotonView를 찾음
+        if (targetView != null)
+        {
+            Transform enemyTransform = targetView.transform;
+            if (PhotonNetwork.IsMasterClient) // 마스터 클라이언트에서만 총알 생성
+            {
+                GameObject bullet = PhotonNetwork.Instantiate(bulletPrefab.name, firePoint.position, firePoint.rotation);
+                bullet.GetComponent<CrystalBullet>().SetTarget(enemyTransform); // 총알에 적의 위치 설정
+            }
+        }
     }
 
-    // 남은 시간을 00:00 형식으로 업데이트
-    void UpdateTimeUI()
+    // 모든 클라이언트에서 남은 시간을 00:00 형식으로 업데이트
+    [PunRPC]
+    void SyncTimeRemaining(float newTimeRemaining)
     {
+        timeRemaining = newTimeRemaining;
         int minutes = Mathf.FloorToInt(timeRemaining / 60);
         int seconds = Mathf.FloorToInt(timeRemaining % 60);
         timeRemainingText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+    }
+
+    // UI 표시
+    [PunRPC]
+    void ShowTimeUI()
+    {
+        timeRemainingText.gameObject.SetActive(true);
+    }
+
+    // UI 숨기기
+    [PunRPC]
+    void StopTimeUI()
+    {
+        timeRemainingText.gameObject.SetActive(false);
     }
 }
