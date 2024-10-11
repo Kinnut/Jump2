@@ -59,8 +59,8 @@ public class CrystalChaser : EnemyBase
         {
             crystalScript.TakeDamage(damage);
         }
-        hasExploded = true;
         Die();
+        hasExploded = true;
     }
 
     // 적을 멈추게 하는 함수

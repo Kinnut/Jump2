@@ -142,11 +142,11 @@ public class WaveSpawner : MonoBehaviourPun
         }
     }
 
-    void OnEnemyDestroyed()
+    public void OnEnemyDestroyed()
     {
         enemiesRemaining--;  // 적이 죽을 때마다 남은 적 수 감소
-        photonView.RPC("SyncEnemyCount", RpcTarget.All, enemiesRemaining); // 적 수 동기화
         Debug.Log("적이 죽었습니다. 남은 적: " + enemiesRemaining);
+        photonView.RPC("SyncEnemyCount", RpcTarget.All, enemiesRemaining); // 적 수 동기화
     }
 
     List<int> GetRandomSpawnIndices(List<int> availableSpawnPoints)
@@ -192,5 +192,6 @@ public class WaveSpawner : MonoBehaviourPun
     void SyncEnemyCount(int remainingEnemies)
     {
         enemiesRemaining = remainingEnemies;  // 모든 클라이언트에서 적 수 동기화
+        Debug.Log("적 수 동기화");
     }
 }

@@ -60,8 +60,12 @@ public abstract class EnemyBase : MonoBehaviourPun
     // 모든 클라이언트에서 실행되는 Die 메서드
     protected virtual void Die()
     {
+        Debug.Log("적이 죽음");
         if (isDead) return;  // 이미 죽은 상태이면 리턴
         isDead = true;  // 죽은 상태로 설정
+        
+        DropItem();
+        OnEnemyDestroyed?.Invoke();  // 이벤트 호출
 
         if (lastHitByPlayer)
         {
@@ -71,8 +75,8 @@ public abstract class EnemyBase : MonoBehaviourPun
             photonView.RPC("DistributeCoins", RpcTarget.All);
         }
 
-        DropItem();
-        OnEnemyDestroyed?.Invoke();  // 이벤트 호출
+
+        Debug.Log("사망 이벤트 호출");
 
         // 모든 클라이언트에서 적 비활성화
         photonView.RPC("DeactivateEnemy", RpcTarget.All);
